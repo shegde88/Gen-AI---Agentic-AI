@@ -47,10 +47,11 @@ uv install
 
 The dataset is not included in this repo because it is 5.37 GB. Download it from Kaggle:
 
-**[FIFA 23 Complete Player Dataset on Kaggle](https://www.kaggle.com/datasets/stefanoleone992/fifa-23-complete-player-dataset)**
+**[FIFA 23 Complete Player Dataset on Kaggle](https://www.kaggle.com/datasets/bryanb/fifa-player-stats-database)**
 
-1. Download the file called **`male_players.csv`**
-2. Place it in this folder (`Week-01-Soccer-Scout-Pro/`)
+1. Download the dataset — it comes as a zip file
+2. Extract the zip and locate the file called **`male_players.csv`**
+3. Place it in this folder (`Week-01-Soccer-Scout-Pro/`)
 
 > **First run note:** The app will scan the CSV and build a fast-loading cache (~2 minutes). Every run after that loads in under 3 seconds.
 
