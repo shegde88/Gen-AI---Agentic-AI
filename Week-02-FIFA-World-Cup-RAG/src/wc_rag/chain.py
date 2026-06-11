@@ -20,8 +20,8 @@ WHY FOUR NODES:
   3. FAITHFULNESS: check_hallucination catches cases where the LLM added facts
      not present in any retrieved chunk, triggering regeneration before the
      answer reaches the user.
-  4. DESIGN PRINCIPLE: "Your 'I don't know' path matters more than your happy
-     path." Making refusal a first-class node enforces this.
+  4. DESIGN PRINCIPLE: "Your 'I don't know' path matters more than your
+     happy path." Making refusal a first-class node enforces this.
 
 CONVERSATION MEMORY:
   chat_history stores the last N (human, ai) message pairs in the LangGraph
@@ -31,6 +31,7 @@ CONVERSATION MEMORY:
 """
 
 import json
+import re
 from typing import Literal, TypedDict
 
 from langchain_core.documents import Document
@@ -160,6 +161,38 @@ def _get_llm() -> ChatOpenAI:
 
 
 # ---------------------------------------------------------------------------
+# Query preprocessing
+# ---------------------------------------------------------------------------
+
+_MONTH_NUMS = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
+}
+_DATE_PATTERN = re.compile(
+    r"\b(January|February|March|April|May|June|July|August|September|October|November|December)"
+    r"\s+(\d{1,2})(?:st|nd|rd|th)?\b",
+    re.IGNORECASE,
+)
+
+
+def _expand_date_in_query(question: str) -> str:
+    """
+    Append ISO date format alongside any natural language date in the query.
+    "Which teams play on June 11th?" → "... June 11th (2026-06-11)?"
+    Schedule CSV rows store dates as 2026-MM-DD; this bridges the semantic gap
+    so Pinecone returns the right rows without requiring re-ingestion.
+    """
+    def _to_iso(m: re.Match) -> str:
+        month = _MONTH_NUMS.get(m.group(1).lower(), 0)
+        day = int(m.group(2))
+        if month:
+            return f"{m.group(0)} (2026-{month:02d}-{day:02d})"
+        return m.group(0)
+
+    return _DATE_PATTERN.sub(_to_iso, question)
+
+
+# ---------------------------------------------------------------------------
 # Node 1: retrieve
 # ---------------------------------------------------------------------------
 
@@ -180,7 +213,8 @@ def _deduplicate_docs(docs: list[Document]) -> list[Document]:
 
 def _make_retrieve_node(retriever: BaseRetriever):
     def retrieve(state: WcRagState) -> WcRagState:
-        docs = _deduplicate_docs(retriever.invoke(state["question"]))
+        query = _expand_date_in_query(state["question"])
+        docs = _deduplicate_docs(retriever.invoke(query))
         scores = _extract_scores(docs)
         return {
             **state,

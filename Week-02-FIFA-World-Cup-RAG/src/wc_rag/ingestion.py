@@ -20,8 +20,10 @@ All documents are tagged with metadata so Pinecone can filter results
 by source_type / team / player / tournament_year / stage.
 """
 
+import csv
 import re
 import time
+from datetime import datetime
 
 import bs4
 from langchain_community.document_loaders import CSVLoader, WebBaseLoader
@@ -304,6 +306,44 @@ _CSV_SCHEMA: dict[str, dict] = {
 }
 
 
+def _enrich_schedule_row(doc: Document) -> Document:
+    """
+    Rewrite a schedule_2026.csv row into a natural language sentence.
+
+    CSVLoader produces "Date: 2026-06-11\nhome_team: Mexico\n..." which embeds
+    poorly for natural language date queries like "June 11th". This prepends a
+    human-readable summary so Pinecone retrieves schedule rows correctly.
+    """
+    fields: dict[str, str] = {}
+    for line in doc.page_content.split("\n"):
+        if ": " in line:
+            key, _, value = line.partition(": ")
+            fields[key.strip()] = value.strip()
+
+    date_str = fields.get("Date", "")
+    human_date = date_str
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        human_date = dt.strftime("%B %-d, %Y")  # "June 11, 2026"
+    except ValueError:
+        pass
+
+    home = fields.get("home_team", "")
+    away = fields.get("away_team", "")
+    round_ = fields.get("Round", "match")
+    day = fields.get("Day", "")
+    time_ = fields.get("Time", "")
+
+    parts = [p for p in [f"{home} vs {away}" if home and away else "",
+                         f"on {human_date}" if human_date else "",
+                         f"({day})" if day else "",
+                         f"at {time_}" if time_ else ""] if p]
+    summary = f"2026 FIFA World Cup {round_}: {' '.join(parts)}"
+
+    updated_content = doc.page_content.replace(f"Date: {date_str}", f"Date: {human_date}")
+    return Document(page_content=f"{summary}\n\n{updated_content}", metadata=doc.metadata)
+
+
 def load_csv_documents() -> list[Document]:
     """
     Load Kaggle World Cup CSVs from data/raw/.
@@ -345,6 +385,8 @@ def load_csv_documents() -> list[Document]:
                     "title": schema["title"],
                     "source_url": str(csv_path),
                 })
+            if csv_path.name == "schedule_2026.csv":
+                rows = [_enrich_schedule_row(row) for row in rows]
             documents.extend(rows)
         except Exception as exc:
             print(f"  WARNING: Failed to load {csv_path.name}: {exc}")
