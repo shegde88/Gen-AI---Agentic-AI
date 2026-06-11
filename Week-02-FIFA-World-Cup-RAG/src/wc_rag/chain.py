@@ -20,8 +20,8 @@ WHY FOUR NODES:
   3. FAITHFULNESS: check_hallucination catches cases where the LLM added facts
      not present in any retrieved chunk, triggering regeneration before the
      answer reaches the user.
-  4. DESIGN PRINCIPLE (from handout): "Your 'I don't know' path matters more
-     than your happy path." Making refusal a first-class node enforces this.
+  4. DESIGN PRINCIPLE: "Your 'I don't know' path matters more than your happy
+     path." Making refusal a first-class node enforces this.
 
 CONVERSATION MEMORY:
   chat_history stores the last N (human, ai) message pairs in the LangGraph

@@ -2,7 +2,7 @@
 FastAPI backend for the vibe-coded chatbot UI.
 
 WHY FASTAPI AND NOT STREAMLIT:
-  The bonus deliverable requires an HTML/JS front-end. Streamlit renders
+  The HTML/JS front-end runs separately from Streamlit and renders
   server-side Python — a browser can't talk to it via fetch(). FastAPI
   exposes a proper REST endpoint that the HTML page can call with fetch().
 
