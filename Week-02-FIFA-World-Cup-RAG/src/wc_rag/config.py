@@ -43,5 +43,7 @@ COHERE_API_KEY = os.getenv("COHERE_API_KEY", "")
 TOP_K = 10                 # candidates returned by each retriever leg
 RERANK_TOP_N = 5           # final docs kept after Cohere reranking
 MIN_RELEVANCE_SCORE = 0.25 # below this → graceful refusal, no generation
+CITATION_TOP_N = 3         # only the top-N ranked docs are candidates for citation
+CITATION_MIN_SCORE = 0.40  # a candidate must also score above this to be cited
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 50

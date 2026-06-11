@@ -160,8 +160,8 @@ st.markdown("""
   <div class="badge-row">
     <span class="badge">⚽ 48 Teams</span>
     <span class="badge">🌎 USA · Canada · Mexico</span>
-    <span class="badge">📚 85 Wikipedia Sources</span>
-    <span class="badge">📊 Match Data 1930–2022</span>
+    <span class="badge">📚 96 Wikipedia Sources</span>
+    <span class="badge">📊 Match Data 1930–2026</span>
   </div>
 </div>
 """, unsafe_allow_html=True)

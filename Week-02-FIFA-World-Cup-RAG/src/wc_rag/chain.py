@@ -41,7 +41,7 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 
-from wc_rag.config import MIN_RELEVANCE_SCORE, NEBIUS_API_KEY, NEBIUS_BASE_URL, NEBIUS_CHAT_MODEL
+from wc_rag.config import CITATION_MIN_SCORE, CITATION_TOP_N, MIN_RELEVANCE_SCORE, NEBIUS_API_KEY, NEBIUS_BASE_URL, NEBIUS_CHAT_MODEL
 
 MAX_HISTORY_TURNS = 4
 MAX_RETRIES = 2
@@ -78,6 +78,11 @@ SYSTEM_PROMPT = (
     "Do NOT calculate, infer, or derive numbers from other numbers — if a specific stat is not directly stated, "
     "report what IS stated and clearly acknowledge what is not available. "
     "For example, if the context says '21 goal contributions' but not the goals-only count, say that. "
+    "WHEN CONTEXT IS INSUFFICIENT: If the retrieved context does not contain a clear answer, "
+    "do NOT assert that the answer is 'none' or that the information 'does not exist'. "
+    "Instead, acknowledge the gap and ask the user to refine their question — for example, "
+    "suggest they mention a specific team name, add '2026 World Cup' to the query, or rephrase. "
+    "Never confidently state a negative fact (e.g. 'No team has a base in X') unless the context explicitly says so. "
     "MATCH TIMES: All 2026 World Cup match times are shown in the local time of the host city. "
     "Host city timezones: US Eastern venues (Boston/Foxborough, New York/East Rutherford, Philadelphia, Washington DC, Miami/Miami Gardens, Atlanta) and Toronto = UTC-4 (EDT). "
     "US Central venues (Dallas/Arlington, Houston, Kansas City) = UTC-5 (CDT). "
@@ -85,6 +90,11 @@ SYSTEM_PROMPT = (
     "US Pacific venues (Los Angeles/Inglewood/SoFi Stadium, Seattle/Lumen Field, San Francisco/Santa Clara/Levi's Stadium) and Vancouver = UTC-7 (PDT). "
     "When a user asks what time a match is, always state the local venue time with its timezone abbreviation "
     "and offer to convert to a different timezone if helpful. "
+    "FOLLOW-UP TIMEZONE REQUESTS: If the user asks to convert a time you just provided to another timezone "
+    "(e.g. 'show in PST', 'what time is that in UTC', 'convert to IST'), calculate directly from general knowledge — "
+    "this is basic arithmetic, not a knowledge base lookup. "
+    "When giving a timezone conversion, state only the result (e.g. '12:00 PM PDT'). "
+    "Do NOT show UTC offsets, do NOT explain the arithmetic, do NOT say things like 'EDT is UTC-4 so …'. "
     "Do NOT add a Sources or References section — sources are shown automatically."
 )
 
@@ -125,8 +135,15 @@ def _format_context(documents: list[Document]) -> str:
 
 
 def _collect_citations(documents: list[Document]) -> list[str]:
+    # Docs arrive sorted by Cohere score (highest first).
+    # Only cite the top-N AND only when the score clears CITATION_MIN_SCORE.
+    # Marginal docs (e.g. historical WC articles that share a place-name with
+    # a 2026 query) can still feed context to the LLM without appearing as sources.
     seen: list[str] = []
-    for doc in documents:
+    for doc in documents[:CITATION_TOP_N]:
+        score = float(doc.metadata.get("relevance_score", doc.metadata.get("score", 0.0)))
+        if score < CITATION_MIN_SCORE:
+            continue
         label = doc.metadata.get("title") or doc.metadata.get("source_url", "unknown")
         if label not in seen:
             seen.append(label)
@@ -200,6 +217,48 @@ def _expand_date_in_query(question: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Follow-up detection — bypass retrieval gate for short contextual questions
+# ---------------------------------------------------------------------------
+
+# Short phrases that almost always mean "continue from what you just said"
+_FOLLOWUP_STARTERS = frozenset({
+    "yes", "yep", "yup", "sure", "ok", "okay", "yeah",
+})
+# Timezone abbreviations — a question containing one of these is very likely
+# asking for a conversion of a time mentioned in the previous turn
+_TZ_TERMS = frozenset({
+    "pst", "pdt", "mst", "mdt", "cst", "cdt", "est", "edt",
+    "gmt", "utc", "ist", "jst", "cet", "bst", "aest", "aedt",
+})
+# Context-dependent pronouns — meaningful only if there's a prior exchange
+_PRONOUN_REFS = frozenset({"this", "it", "that", "these", "those", "same"})
+
+
+def _is_followup(question: str, chat_history: list) -> bool:
+    """
+    Return True when the question is almost certainly referring to the previous
+    answer and needs no new Pinecone retrieval to be answered correctly.
+
+    Heuristic: short (≤ 8 words) AND one of:
+      • starts with a confirmatory word ("yes", "sure", "ok" …)
+      • contains a timezone abbreviation ("PST", "UTC" …)
+      • contains a bare pronoun reference ("this", "it", "that" …)
+    """
+    if not chat_history:
+        return False
+    words = question.strip().lower().split()
+    if len(words) > 8:
+        return False
+    if words and words[0] in _FOLLOWUP_STARTERS:
+        return True
+    if any(w.rstrip("?.,!") in _TZ_TERMS for w in words):
+        return True
+    if any(w in _PRONOUN_REFS for w in words):
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
 # Node 1: retrieve
 # ---------------------------------------------------------------------------
 
@@ -241,18 +300,22 @@ def grade_relevance(state: WcRagState) -> WcRagState:
     Decide whether retrieved context is good enough to send to the LLM.
 
     Decision rule:
-      - If no documents were retrieved → refuse
-      - If max relevance score < MIN_RELEVANCE_SCORE → refuse
+      - If no documents were retrieved → refuse (unless follow-up)
+      - If max relevance score < MIN_RELEVANCE_SCORE → refuse (unless follow-up)
       - Otherwise → answer
 
-    The threshold (0.30) is defined in config.py.
+    Follow-up bypass: short, context-dependent questions (timezone conversions,
+    pronoun references like "show this in PST") are routed to the answer node
+    with an empty document list so the LLM answers purely from chat_history.
+    The hallucination check is skipped in that case (no docs to check against).
     """
     docs = state["documents"]
     scores = state["relevance_scores"]
 
-    if not docs:
-        decision = "refuse"
-    elif not scores or max(scores, default=0.0) < MIN_RELEVANCE_SCORE:
+    if not docs or not scores or max(scores, default=0.0) < MIN_RELEVANCE_SCORE:
+        if _is_followup(state["question"], state.get("chat_history", [])):
+            # Answer from chat_history; clear docs so hallucination check skips
+            return {**state, "documents": [], "relevance_scores": [], "routing_decision": "answer"}
         decision = "refuse"
     else:
         decision = "answer"
@@ -303,7 +366,18 @@ def _check_hallucination_node(state: WcRagState) -> WcRagState:
 
     Fail-open: if the checker errors or returns unparseable output, we
     accept the answer to avoid blocking the user on a checker failure.
+
+    Skip: when documents is empty the answer came from chat_history alone
+    (a follow-up / timezone conversion). There's nothing to ground-check
+    against, so we accept it directly.
     """
+    if not state.get("documents"):
+        return {
+            **state,
+            "hallucination_result": "grounded",
+            "retry_count": state.get("retry_count", 0) + 1,
+        }
+
     try:
         chain = HALLUCINATION_CHECK_PROMPT | _get_llm()
         response = chain.invoke(

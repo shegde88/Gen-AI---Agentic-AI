@@ -222,7 +222,7 @@
   <h1>FIFA World Cup 2026<br>Fan Intelligence RAG App</h1>
   <div class="subtitle">
     A production-grade Retrieval-Augmented Generation system built with LangChain + LangGraph,
-    grounded in 96 Wikipedia sources and 6 structured datasets, evaluated on 15 questions with 87% keyword coverage.
+    grounded in 96 Wikipedia sources and 7 structured datasets, evaluated on 15 questions with 87% keyword coverage.
   </div>
   <div class="badge-row">
     <span class="badge">Track 2 · Code-heavy</span>
@@ -240,8 +240,8 @@
   <div class="section">
     <div class="section-title">The One-Liner</div>
     <div class="oneliner">
-      "My RAG app helps football fans answer questions about teams, players, venues, and tournament history
-      from 85 curated Wikipedia sources + 6 structured CSV datasets in a Streamlit chat UI
+      "My RAG app helps football fans answer questions about teams, players, venues, match history, and training camp locations
+      from 96 curated Wikipedia sources + 7 structured CSV datasets in a Streamlit chat UI
       with 87% keyword coverage and 100% source citation on in-scope questions."
     </div>
   </div>
@@ -257,7 +257,7 @@
       </tr>
       <tr>
         <td>Corpus</td>
-        <td>96 Wikipedia articles (15 tournament pages including 2026 overview with training camps, all 12 group stage articles A–L, venues, squads; 24 history pages covering all 22 editions 1930–2022; 49 team profiles; 8 player profiles) plus 6 CSV datasets: match results 1930–2022, tournament summaries, 2026 fixture schedule with venue/city/timezone, FIFA rankings (2022 &amp; 2026), and win probability predictions. Total: 20,539 chunks in Pinecone.</td>
+        <td>96 Wikipedia articles (15 tournament pages including 2026 overview with training camps, all 12 group stage articles A–L, venues, squads; 24 history pages covering all 22 editions 1930–2022; 49 team profiles; 8 player profiles) plus 7 CSV datasets: match results 1930–2022, tournament summaries, 2026 fixture schedule with venue/city/timezone, all 48 team base camp locations, FIFA rankings (2022 &amp; 2026), and win probability predictions.</td>
       </tr>
       <tr>
         <td>Ingestion + cleaning</td>
@@ -281,7 +281,7 @@
       </tr>
       <tr>
         <td>"I don't know" path</td>
-        <td>LangGraph <code>grade_relevance</code> node gates on the highest Cohere relevance score. If all retrieved chunks score below 0.30, the graph routes to a fixed refusal string: "I couldn't find this in the World Cup knowledge base." No hallucination possible on this path.</td>
+        <td>LangGraph <code>grade_relevance</code> node gates on the highest Cohere relevance score. If all retrieved chunks score below 0.25, the graph routes to a fixed refusal string — unless <code>_is_followup()</code> detects a short contextual question (timezone conversion, pronoun reference), in which case the answer node responds from <code>chat_history</code> alone. No hallucination possible on the refusal path.</td>
       </tr>
       <tr>
         <td>Latency target</td>
@@ -298,7 +298,7 @@
   <div class="section">
     <div class="section-title">Datasets Used</div>
 
-    <p><strong style="color:var(--white)">Wikipedia Articles (85 pages scraped via WebBaseLoader)</strong></p>
+    <p><strong style="color:var(--white)">Wikipedia Articles (96 pages scraped via WebBaseLoader)</strong></p>
     <table>
       <tr><th>Category</th><th>Count</th><th>Examples</th></tr>
       <tr><td>Tournament</td><td>4</td><td>2026 FIFA World Cup, Group Stage, Squads, Venues</td></tr>
@@ -307,12 +307,13 @@
       <tr><td>Players</td><td>8</td><td>Messi, Mbappé, Vinicius Jr, Bellingham, Ronaldo, Lamine Yamal, Pedri, Rodri</td></tr>
     </table>
 
-    <p style="margin-top:20px"><strong style="color:var(--white)">CSV Datasets (6 files in <code>data/raw/</code>)</strong></p>
+    <p style="margin-top:20px"><strong style="color:var(--white)">CSV Datasets (7 files in <code>data/raw/</code>)</strong></p>
     <table>
       <tr><th>File</th><th>Content</th></tr>
       <tr><td>matches_1930_2022.csv</td><td>Full match results history with scorers, venues, managers</td></tr>
       <tr><td>world_cup.csv</td><td>Tournament summaries: champion, runner-up, top scorer, attendance per edition</td></tr>
-      <tr><td>schedule_2026.csv</td><td>2026 group stage fixture list with dates and venues</td></tr>
+      <tr><td>schedule_2026.csv</td><td>2026 group stage fixtures with venue, city, local time, UTC offset, UTC time. Each row enriched into a natural language summary.</td></tr>
+      <tr><td>training_camps_2026.csv</td><td>All 48 team base camp locations: facility name, city, state/province, country. Each row enriched into a 2-sentence summary so location-based queries score correctly.</td></tr>
       <tr><td>fifa_ranking_2026-06-08.csv</td><td>Current FIFA world rankings as of June 2026</td></tr>
       <tr><td>fifa_ranking_2022-10-06.csv</td><td>FIFA rankings at time of 2022 World Cup</td></tr>
       <tr><td>future_match_probabilities_baseline.csv</td><td>2026 match win probability predictions (baseline model)</td></tr>
@@ -493,7 +494,7 @@ chat bubbles, a suggested questions strip, and source citation cards."</div>
     <div class="card">
       <div class="tag feature">Expansion</div>
       <h4>Corpus expansion: 26 → 85 → 96 Wikipedia sources</h4>
-      <p>Initial corpus had 26 sources. First expansion added all 48 qualifying nations, all 22 World Cup editions, and 8 player pages (85 sources). Second expansion added all 12 group stage articles (Group A–L), which include match schedules with local times, UTC offsets, venues, and live results. Final corpus: 96 Wikipedia sources + 6 CSVs = 20,539 chunks.</p>
+      <p>Initial corpus had 26 sources. First expansion added all 48 qualifying nations, all 22 World Cup editions, and 8 player pages (85 sources). Second expansion added all 12 group stage articles (Group A–L), which include match schedules with local times, UTC offsets, venues, and live results. Final corpus: 96 Wikipedia sources + 7 CSVs.</p>
     </div>
 
     <div class="card">
@@ -518,6 +519,24 @@ chat bubbles, a suggested questions strip, and source citation cards."</div>
       <div class="tag feature">Feature</div>
       <h4>Vibe-coded bonus HTML/JS frontend</h4>
       <p>Built a standalone chatbot UI with animated typing indicators, source citation cards, and a suggested questions strip. Connected to a FastAPI backend (<code>api.py</code>) that wraps the same LangGraph RAG chain used by the Streamlit app.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Follow-up timezone conversion refused</h4>
+      <p>After answering "The 2026 final is at 3pm EDT", the follow-up "Yes can you show this in PST?" returned a refusal. Root cause: short follow-ups embed to vectors with no World Cup keywords — Pinecone returns irrelevant chunks that all score below threshold, and <code>grade_relevance</code> refuses before the LLM sees the question. Fix: added <code>_is_followup()</code> heuristic detecting short (≤ 8 word) questions starting with confirmatory words ("yes", "sure") or containing timezone terms ("PST", "UTC", "EDT"). These bypass the Cohere gate and route to the answer node using <code>chat_history</code> alone. Hallucination check also skips when documents are empty (nothing to ground-check against). System prompt updated to suppress timezone arithmetic — LLM now states only the converted time, not the calculation.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Noisy source citations (1994 WC, Saudi Arabia appearing for 2026 queries)</h4>
+      <p>Marginal documents that barely passed the 0.25 relevance gate (because they share place names like "MetLife" or "Washington" with historical WC articles) appeared as cited sources alongside the correct 2026 documents. Fix: added <code>CITATION_TOP_N = 3</code> to cap source display to the three highest-ranked docs, and <code>CITATION_MIN_SCORE = 0.40</code> so a doc must score ≥ 0.40 to appear as a citation. Documents below this threshold still provide context to the LLM but are invisible to the user as sources.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Training camp location queries failing</h4>
+      <p>"Which team has a base camp in Washington state?" returned "None of the teams have a base camp there." Root cause: training camp data lives in one large Wikipedia table chunk covering all 48 teams. For a location-based query, "Washington" appears once among 48 city entries — no semantic anchor per team. After footnote chunk filtering, only the 2006 and 2010 WC base camp chunks remained above threshold. Fix: created <code>training_camps_2026.csv</code> with one row per team (48 rows), each enriched by <code>_enrich_training_camp_row()</code> into a two-sentence natural language summary: <em>"Belgium's 2026 FIFA World Cup base camp is at Seattle Sounders FC Performance Centre in Renton, Washington, USA. Belgium will train and stay at Seattle Sounders FC Performance Centre (Renton, Washington) during the 2026 FIFA World Cup."</em> Each team now has a dedicated, semantically-anchored chunk. Washington state teams: Belgium (Renton) and Egypt (Spokane, Gonzaga University).</p>
     </div>
   </div>
 

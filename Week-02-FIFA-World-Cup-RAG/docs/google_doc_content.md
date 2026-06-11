@@ -7,7 +7,7 @@
 
 ## The One-Liner
 
-> My RAG app helps football fans answer questions about teams, players, venues, and tournament history from 96 curated Wikipedia sources + 6 structured CSV datasets in a Streamlit chat UI with 87% keyword coverage and 100% source citation on in-scope questions.
+> My RAG app helps football fans answer questions about teams, players, venues, match history, and training camp locations from 96 curated Wikipedia sources + 7 structured CSV datasets in a Streamlit chat UI with 87% keyword coverage and 100% source citation on in-scope questions.
 
 ---
 
@@ -32,13 +32,13 @@ When the system cannot find a relevant answer in the knowledge base, it graceful
 | Field | Decision |
 |---|---|
 | **Use case** | Football fans ask natural-language questions about the 2026 FIFA World Cup via a Streamlit chat interface |
-| **Corpus** | 96 Wikipedia articles + 6 CSV datasets (full details below) |
+| **Corpus** | 96 Wikipedia articles + 7 CSV datasets (full details below) |
 | **Ingestion + cleaning** | WebBaseLoader targets `div#mw-content-text` to skip navigation; regex strips `[1]` citation markers and `[edit]` links; Wikipedia footnote chunks filtered at retrieval time |
 | **Ingestion + freshness** | One-time batch ingest via `scripts/ingest.py`; static corpus (no automated refresh); production deployment would re-scrape weekly during the live tournament |
 | **Chunking + embedding** | RecursiveCharacterTextSplitter at 512 tokens / 50-token overlap; embedded with Nebius `Qwen/Qwen3-Embedding-8B` (4096 dims) |
 | **Retrieve** | Pinecone serverless (dense cosine, k=10 candidates) + Cohere `rerank-english-v3.0` cross-encoder (rerank to top-5) |
 | **Generate** | Nebius `meta-llama/Llama-3.3-70B-Instruct` via LangChain's ChatOpenAI wrapper |
-| **"I don't know" path** | LangGraph `grade_relevance` node gates on Cohere relevance score < 0.25 → fixed refusal string, no hallucination |
+| **"I don't know" path** | LangGraph `grade_relevance` node gates on Cohere relevance score < 0.25 → fixed refusal string, no hallucination. Short follow-up questions (timezone conversions, pronoun references) bypass this gate and answer from `chat_history`. |
 | **Latency target** | < 8 seconds end-to-end (estimated actual: 3–6 seconds) |
 | **Total vectors** | 20,539 chunks in Pinecone |
 
@@ -55,13 +55,14 @@ When the system cannot find a relevant answer in the knowledge base, it graceful
 | Teams | 49 | All 48 qualifying nations across all 6 confederations + Serbia |
 | Players | 8 | Messi, Mbappé, Vinicius Jr, Bellingham, Ronaldo, Lamine Yamal, Pedri, Rodri |
 
-### CSV Datasets (6 files)
+### CSV Datasets (7 files)
 
 | File | Content |
 |---|---|
 | `matches_1930_2022.csv` | Full match results with scorers, venues, managers |
 | `world_cup.csv` | Tournament summaries: champion, runner-up, top scorer, attendance |
-| `schedule_2026.csv` | 2026 group stage fixture list with dates and venues |
+| `schedule_2026.csv` | 2026 group stage fixtures with venue, city, local time, UTC offset, UTC time |
+| `training_camps_2026.csv` | All 48 team base camp locations: facility, city, state/province, country |
 | `fifa_ranking_2026-06-08.csv` | Current FIFA world rankings (June 2026) |
 | `fifa_ranking_2022-10-06.csv` | FIFA rankings at time of 2022 World Cup |
 | `future_match_probabilities_baseline.csv` | 2026 match win probability predictions |
@@ -190,6 +191,15 @@ Added `chat_history` as a list of `(question, answer)` tuples flowing through th
 
 ### Feature — Vibe-coded bonus HTML/JS frontend
 Built a standalone chatbot UI (`frontend/index.html`) with animated typing indicators, source citation cards, and a suggested questions strip. Connected to a FastAPI backend (`api.py`) that wraps the same LangGraph RAG chain used by the Streamlit app.
+
+### Bug Fix — Follow-up timezone conversion refused
+After answering "The 2026 final is at 3pm EDT", the follow-up "Yes can you show this in PST?" returned a refusal. Root cause: short follow-ups embed to vectors with no World Cup keywords, so Pinecone returns irrelevant chunks that all score below threshold, and `grade_relevance` refuses before the LLM sees the question. Fix: added `_is_followup()` heuristic that detects short (≤ 8 word) questions starting with confirmatory words ("yes", "sure") or containing timezone abbreviations ("PST", "UTC"). These bypass the Cohere gate and route to the answer node via `chat_history` alone. Also added `CITATION_MIN_SCORE = 0.40` so the hallucination check is skipped when there are no retrieved docs to check against.
+
+### Quality Fix — Noisy source citations
+Answers about the 2026 final were citing "1994 FIFA World Cup" and "Saudi Arabia National Team" as sources alongside the correct 2026 articles. Marginal documents that barely passed the 0.25 relevance gate (because they contain overlapping place names like "MetLife" or "Washington") were included in citations. Fix: `CITATION_TOP_N = 3` caps citations to the three highest-scoring docs; `CITATION_MIN_SCORE = 0.40` requires each cited source to score ≥ 0.40. Documents below this threshold still provide context to the LLM but do not appear as sources to the user.
+
+### Bug Fix — Training camp location queries failing
+"Which team has a base camp in Washington state?" returned "None of the teams have a base camp there." Root cause: training camp data lives in one large Wikipedia table chunk covering all 48 teams. For a location-based query, "Washington" appears once among 48 city entries — no semantic anchor. After footnote chunk filtering, only the 2006 and 2010 WC base camp chunks remained above threshold (both real content, wrong year). Fix: created `training_camps_2026.csv` with one row per team, each enriched into a two-sentence natural language summary ("Belgium's 2026 FIFA World Cup base camp is at Seattle Sounders FC Performance Centre in Renton, Washington, USA. Belgium will train and stay..."). Each team now has its own dedicated, semantically-rich chunk. Washington state teams: Belgium (Renton) and Egypt (Spokane).
 
 ---
 

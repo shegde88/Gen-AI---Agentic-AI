@@ -326,6 +326,10 @@ _CSV_SCHEMA: dict[str, dict] = {
         "source_type": "prediction",
         "title": "2026 World Cup Match Win Probabilities",
     },
+    "training_camps_2026.csv": {
+        "source_type": "tournament",
+        "title": "2026 FIFA World Cup Training Camps",
+    },
 }
 
 
@@ -385,6 +389,39 @@ def _enrich_schedule_row(doc: Document) -> Document:
     return Document(page_content=f"{summary}\n\n{updated_content}", metadata=doc.metadata)
 
 
+def _enrich_training_camp_row(doc: Document) -> Document:
+    """
+    Rewrite a training_camps_2026.csv row into a natural language sentence.
+
+    Dense table chunks score poorly for location-based queries ("which team is
+    in Washington state?") because the retriever sees no semantic anchor. A
+    full sentence per team gives it that anchor while preserving all searchable
+    terms: team name, facility, city, state, country, and "base camp".
+    """
+    fields: dict[str, str] = {}
+    for line in doc.page_content.split("\n"):
+        if ": " in line:
+            key, _, value = line.partition(": ")
+            fields[key.strip()] = value.strip()
+
+    team = fields.get("team", "")
+    site = fields.get("training_site", "")
+    city = fields.get("city", "")
+    state = fields.get("state_province", "")
+    country = fields.get("country", "")
+
+    location_parts = [p for p in [city, state, country] if p]
+    location = ", ".join(location_parts)
+
+    summary = (
+        f"{team}'s 2026 FIFA World Cup base camp is at {site} in {location}. "
+        f"{team} will train and stay at {site} ({city}{', ' + state if state else ''}) "
+        f"during the 2026 FIFA World Cup."
+    )
+
+    return Document(page_content=f"{summary}\n\n{doc.page_content}", metadata=doc.metadata)
+
+
 def load_csv_documents() -> list[Document]:
     """
     Load Kaggle World Cup CSVs from data/raw/.
@@ -428,6 +465,8 @@ def load_csv_documents() -> list[Document]:
                 })
             if csv_path.name == "schedule_2026.csv":
                 rows = [_enrich_schedule_row(row) for row in rows]
+            elif csv_path.name == "training_camps_2026.csv":
+                rows = [_enrich_training_camp_row(row) for row in rows]
             documents.extend(rows)
         except Exception as exc:
             print(f"  WARNING: Failed to load {csv_path.name}: {exc}")
