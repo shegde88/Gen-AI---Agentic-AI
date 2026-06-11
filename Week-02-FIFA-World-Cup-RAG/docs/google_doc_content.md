@@ -40,7 +40,7 @@ When the system cannot find a relevant answer in the knowledge base, it graceful
 | **Generate** | Nebius `meta-llama/Llama-3.3-70B-Instruct` via LangChain's ChatOpenAI wrapper |
 | **"I don't know" path** | LangGraph `grade_relevance` node gates on Cohere relevance score < 0.25 → fixed refusal string, no hallucination. Short follow-up questions (timezone conversions, pronoun references) bypass this gate and answer from `chat_history`. |
 | **Latency target** | < 8 seconds end-to-end (estimated actual: 3–6 seconds) |
-| **Total vectors** | 20,539 chunks in Pinecone |
+| **Total vectors** | 20,573 chunks in Pinecone |
 
 ---
 
