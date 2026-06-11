@@ -1,0 +1,262 @@
+[
+  {
+    "id": 1,
+    "category": "tournament",
+    "question": "How many teams are participating in the 2026 FIFA World Cup?",
+    "answer": "The 2026 FIFA World Cup will have 48 teams participating from 6 confederations.",
+    "citations": [
+      "2026 FIFA World Cup",
+      "2026 FIFA World Cup Squads",
+      "FIFA World Cup"
+    ],
+    "docs_retrieved": 3,
+    "keyword_hits": [
+      "48",
+      "teams"
+    ],
+    "relevance_score": 2,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 2,
+    "category": "tournament",
+    "question": "Which three countries are hosting the 2026 FIFA World Cup?",
+    "answer": "The three countries hosting the 2026 FIFA World Cup are the United States, Canada, and Mexico. This will be the first time a World Cup is shared by three host nations.",
+    "citations": [
+      "FIFA World Cup",
+      "1994 FIFA World Cup"
+    ],
+    "docs_retrieved": 3,
+    "keyword_hits": [
+      "United States",
+      "Canada",
+      "Mexico"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 3,
+    "category": "tournament",
+    "question": "What is the new group-stage format for the 2026 World Cup compared to 2022?",
+    "answer": "The new group-stage format for the 2026 World Cup features 12 groups of four teams each. This is a change from the initially approved format, which had 16 groups of three teams each. In comparison to the 2022 World Cup format, which is not specified here, the 2026 format will have groups of four teams, with the top two teams from each group, plus the top 8 third-placed teams, advancing to the knockout stage. The exact format of the 2022 World Cup is not available in this context.",
+    "citations": [
+      "FIFA World Cup"
+    ],
+    "docs_retrieved": 1,
+    "keyword_hits": [
+      "16",
+      "groups",
+      "three"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 4,
+    "category": "tournament",
+    "question": "Where is the 2026 FIFA World Cup final being held?",
+    "answer": "The 2026 FIFA World Cup final's host location is not specified in the provided information. However, it is mentioned that the US will host all matches from the quarter-finals onward, including 60 matches in total.",
+    "citations": [
+      "FIFA World Cup",
+      "2026 FIFA World Cup"
+    ],
+    "docs_retrieved": 2,
+    "keyword_hits": [],
+    "relevance_score": 0,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 5,
+    "category": "tournament",
+    "question": "How many venues are being used in the 2026 FIFA World Cup?",
+    "answer": "The 2026 FIFA World Cup is being held in 16 venues, located in 16 different host cities across the United States, Canada, and Mexico.",
+    "citations": [
+      "2026 FIFA World Cup",
+      "FIFA World Cup"
+    ],
+    "docs_retrieved": 2,
+    "keyword_hits": [
+      "16",
+      "venues"
+    ],
+    "relevance_score": 2,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 6,
+    "category": "history",
+    "question": "How many times has Brazil won the FIFA World Cup?",
+    "answer": "Brazil has won the FIFA World Cup five times: in 1958, 1962, 1970, 1994, and 2002.",
+    "citations": [
+      "Brazil National Football Team",
+      "FIFA World Cup"
+    ],
+    "docs_retrieved": 3,
+    "keyword_hits": [
+      "5",
+      "five",
+      "Brazil"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 7,
+    "category": "history",
+    "question": "Who is the all-time top scorer in FIFA World Cup history?",
+    "answer": "The all-time top scorer in FIFA World Cup history is Miroslav Klose of Germany, with 16 goals scored across four World Cups.",
+    "citations": [
+      "FIFA World Cup Records and Statistics",
+      "FIFA World Cup"
+    ],
+    "docs_retrieved": 3,
+    "keyword_hits": [
+      "Miroslav Klose",
+      "16",
+      "goals"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 8,
+    "category": "history",
+    "question": "Which country won the 2022 FIFA World Cup?",
+    "answer": "Argentina won the 2022 FIFA World Cup, claiming their 3rd title.",
+    "citations": [
+      "2022 FIFA World Cup",
+      "IR Iran National Football Team"
+    ],
+    "docs_retrieved": 2,
+    "keyword_hits": [
+      "Argentina",
+      "2022"
+    ],
+    "relevance_score": 2,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 9,
+    "category": "team",
+    "question": "What was Morocco's best-ever result at a FIFA World Cup?",
+    "answer": "Morocco's best-ever result at a FIFA World Cup was in the 2022 tournament, where they finished in fourth place and became the first African nation to reach the semi-finals of the tournament.",
+    "citations": [
+      "Morocco National Football Team"
+    ],
+    "docs_retrieved": 4,
+    "keyword_hits": [
+      "2022",
+      "semi-final",
+      "fourth"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 10,
+    "category": "team",
+    "question": "How many World Cup titles does Germany have?",
+    "answer": "Germany has won the FIFA World Cup four times, with their titles coming in 1954, 1974, 1990, and 2014.",
+    "citations": [
+      "Germany National Football Team"
+    ],
+    "docs_retrieved": 3,
+    "keyword_hits": [
+      "4",
+      "four",
+      "Germany"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 11,
+    "category": "player",
+    "question": "How many FIFA World Cup goals has Lionel Messi scored in his career?",
+    "answer": "Lionel Messi scored 7 goals at the 2022 FIFA World Cup. However, his total FIFA World Cup goals scored in his career is not explicitly stated in the provided information. We only know he scored twice in the 2022 final and 7 goals in the 2022 tournament, but the total number of World Cup goals throughout his career is not available.",
+    "citations": [
+      "Lionel Messi"
+    ],
+    "docs_retrieved": 2,
+    "keyword_hits": [
+      "Messi",
+      "goals",
+      "World Cup"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 12,
+    "category": "player",
+    "question": "What club does Kylian Mbapp\u00e9 play for?",
+    "answer": "Kylian Mbapp\u00e9 plays for Real Madrid. He previously played for Paris Saint-Germain from 2017 to 2024, but as of the given information, he is currently with the La Liga club Real Madrid.",
+    "citations": [
+      "Kylian Mbapp\u00e9"
+    ],
+    "docs_retrieved": 2,
+    "keyword_hits": [
+      "Mbapp\u00e9",
+      "Real Madrid"
+    ],
+    "relevance_score": 2,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 13,
+    "category": "multi-doc",
+    "question": "Compare the number of World Cup titles won by Argentina and France.",
+    "answer": "Argentina has won 3 World Cup titles, with their most recent one being in 2022. France has also won the World Cup, but the exact number of titles won by France is not explicitly stated in the provided context, except for mentioning that Argentina won their third title and that France was the title holder in 2022, implying France had won at least one title prior to 2022, and another instance in 1998 and possibly other years.",
+    "citations": [
+      "Argentina National Football Team",
+      "FIFA World Cup Records and Statistics",
+      "2022 FIFA World Cup"
+    ],
+    "docs_retrieved": 3,
+    "keyword_hits": [
+      "Argentina",
+      "France",
+      "2",
+      "1"
+    ],
+    "relevance_score": 4,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 14,
+    "category": "edge",
+    "question": "Who scored the golden goal to win a World Cup in extra time?",
+    "answer": "The golden goal to win a World Cup in extra time was scored by Geoff Hurst in the 1966 World Cup, but it's not explicitly stated as a \"golden goal\" in the provided context. However, it is mentioned that he scored a goal in the 98th minute of extra time, which was awarded as a goal despite debate over whether the ball crossed the line. \n\nIt's worth noting that the term \"golden goal\" was introduced by FIFA in 1992, and it was used from 1998 to 2002. The provided context does mention David Trezeguet scoring a golden goal in Euro 2000, but not in a World Cup.",
+    "citations": [
+      "2006 FIFA World Cup",
+      "1966 FIFA World Cup",
+      "2002 FIFA World Cup",
+      "Germany National Football Team"
+    ],
+    "docs_retrieved": 4,
+    "keyword_hits": [
+      "1998",
+      "2002",
+      "golden goal"
+    ],
+    "relevance_score": 3,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  },
+  {
+    "id": 15,
+    "category": "out-of-scope",
+    "question": "What was the attendance figure for the 2026 World Cup final match?",
+    "answer": "The attendance figure for the 2026 World Cup final match is not available. The provided information discusses the hosting of the 2026 World Cup, its expansion to 48 teams, and the distribution of matches among the host nations, but it does not mention attendance figures for the 2026 tournament, including the final match.",
+    "citations": [
+      "1986 FIFA World Cup",
+      "1994 FIFA World Cup",
+      "FIFA World Cup",
+      "FIFA World Cup Records and Statistics"
+    ],
+    "docs_retrieved": 4,
+    "keyword_hits": [],
+    "relevance_score": 0,
+    "faithfulness_note": "Grounded \u2014 answer cites sources"
+  }
+]

@@ -1,0 +1,24 @@
+# Secrets — never commit
+.env
+
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+uv.lock
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Scraped HTML cache
+data/raw/*.html
+
+# Notebook checkpoints
+.ipynb_checkpoints/

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFA World Cup 2026 RAG App — Project Documentation</title>
+  <style>
+    :root {
+      --bg: #0A0E1A;
+      --surface: #131929;
+      --border: #1E2A45;
+      --gold: #D4AF37;
+      --blue: #003DA5;
+      --red: #C8102E;
+      --text: #E8EAF0;
+      --muted: #8892A4;
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 0 0 80px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--bg) 55%, var(--red) 100%);
+      padding: 56px 48px 44px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "⚽";
+      position: absolute;
+      right: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 8rem;
+      opacity: 0.08;
+    }
+    .hero .label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 640px;
+      margin-bottom: 24px;
+    }
+    .badge-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .badge {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(212,175,55,0.35);
+      border-radius: 20px;
+      padding: 5px 16px;
+      font-size: 0.78rem;
+      color: var(--gold);
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    /* ── Section ── */
+    .section { padding: 48px 0 0; }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .section p, .section li { color: var(--text); margin-top: 12px; }
+    .section ul, .section ol { padding-left: 22px; margin-top: 8px; }
+    .section li { margin-bottom: 6px; }
+
+    /* ── One-liner callout ── */
+    .oneliner {
+      background: var(--surface);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 10px 10px 0;
+      padding: 18px 24px;
+      margin-top: 20px;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--white);
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    th {
+      background: var(--blue);
+      color: var(--white);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 16px;
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+    td:first-child { color: var(--gold); font-weight: 600; white-space: nowrap; }
+
+    /* ── Prompt box ── */
+    .prompt-block {
+      background: #0D1220;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 14px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: #A8B8D0;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .prompt-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 24px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Iteration card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-top: 14px;
+    }
+    .card h4 {
+      color: var(--white);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .card p { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+    .tag {
+      display: inline-block;
+      background: rgba(212,175,55,0.12);
+      border: 1px solid rgba(212,175,55,0.3);
+      color: var(--gold);
+      border-radius: 4px;
+      padding: 1px 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .tag.fix { background: rgba(200,16,46,0.12); border-color: rgba(200,16,46,0.3); color: #F87C8A; }
+    .tag.feature { background: rgba(0,61,165,0.2); border-color: rgba(0,61,165,0.5); color: #7EB3FF; }
+
+    /* ── Eval result chips ── */
+    .metric-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .metric .value { font-size: 1.8rem; font-weight: 800; color: var(--gold); }
+    .metric .label2 { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    footer span { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="label">The Gen Academy · Mastering Agentic AI · Week 2 Project</div>
+  <h1>FIFA World Cup 2026<br>Fan Intelligence RAG App</h1>
+  <div class="subtitle">
+    A production-grade Retrieval-Augmented Generation system built with LangChain + LangGraph,
+    grounded in 85 Wikipedia sources and 6 structured datasets, evaluated on 15 questions with 87% keyword coverage.
+  </div>
+  <div class="badge-row">
+    <span class="badge">Track 2 · Code-heavy</span>
+    <span class="badge">LangChain + LangGraph</span>
+    <span class="badge">Nebius Token Factory</span>
+    <span class="badge">Pinecone Serverless</span>
+    <span class="badge">Cohere Reranker</span>
+    <span class="badge">Streamlit UI + Bonus HTML Frontend</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── One-liner ── -->
+  <div class="section">
+    <div class="section-title">The One-Liner</div>
+    <div class="oneliner">
+      "My RAG app helps football fans answer questions about teams, players, venues, and tournament history
+      from 85 curated Wikipedia sources + 6 structured CSV datasets in a Streamlit chat UI
+      with 87% keyword coverage and 100% source citation on in-scope questions."
+    </div>
+  </div>
+
+  <!-- ── RAG Framework ── -->
+  <div class="section">
+    <div class="section-title">RAG Framework Decisions</div>
+    <table>
+      <tr><th>Field</th><th>Decision</th></tr>
+      <tr>
+        <td>Use case</td>
+        <td>Football fans ask natural-language questions about the 2026 FIFA World Cup — teams, players, venues, historical records — via a Streamlit chat interface.</td>
+      </tr>
+      <tr>
+        <td>Corpus</td>
+        <td>85 Wikipedia articles (4 tournament pages, 24 history pages covering all 22 editions 1930–2022, 49 team profiles for all 48 qualifying nations, 8 player profiles) plus 6 CSV datasets: match results 1930–2022, tournament summaries, 2026 fixture schedule, FIFA rankings (2022 &amp; 2026), and win probability predictions.</td>
+      </tr>
+      <tr>
+        <td>Ingestion + cleaning</td>
+        <td>WebBaseLoader targets <code>div#mw-content-text</code> to skip Wikipedia navigation and sidebars. Regex strips <code>[1]</code> citation markers and <code>[edit]</code> section links. Wikipedia footnote chunks (lines starting with "^") filtered at retrieval time to prevent noise reaching the LLM.</td>
+      </tr>
+      <tr>
+        <td>Ingestion + freshness</td>
+        <td>One-time batch ingest via <code>scripts/ingest.py</code>. Static corpus — no automated refresh. For a production deployment, a weekly re-scrape of Wikipedia pages would be appropriate given the tournament is live until July 2026.</td>
+      </tr>
+      <tr>
+        <td>Chunking + embedding</td>
+        <td>RecursiveCharacterTextSplitter at 512 tokens / 50-token overlap — large enough to capture multi-sentence facts, small enough for precise retrieval. Embedded with Nebius <code>Qwen/Qwen3-Embedding-8B</code> (4096 dimensions) chosen for its strong multilingual and domain performance on the Nebius Token Factory.</td>
+      </tr>
+      <tr>
+        <td>Retrieve</td>
+        <td>Pinecone serverless (dense cosine similarity) with Cohere <code>rerank-english-v3.0</code> cross-encoder reranking. Retrieve k=10 candidates, rerank to top-5. Dense-only in the Streamlit app (BM25 requires in-memory corpus available at query time).</td>
+      </tr>
+      <tr>
+        <td>Generate</td>
+        <td>Nebius <code>meta-llama/Llama-3.3-70B-Instruct</code> via LangChain's ChatOpenAI wrapper (OpenAI-compatible endpoint). System prompt instructs the model to answer conversationally, never mention "context passages", not fabricate facts absent from retrieved chunks, and never add a Sources section (citations handled by the app layer).</td>
+      </tr>
+      <tr>
+        <td>"I don't know" path</td>
+        <td>LangGraph <code>grade_relevance</code> node gates on the highest Cohere relevance score. If all retrieved chunks score below 0.30, the graph routes to a fixed refusal string: "I couldn't find this in the World Cup knowledge base." No hallucination possible on this path.</td>
+      </tr>
+      <tr>
+        <td>Latency target</td>
+        <td>&lt; 8 seconds end-to-end. Estimated actual: 3–6 seconds (Pinecone ~300ms + Cohere rerank ~600ms + Llama 70B generation ~2–5s).</td>
+      </tr>
+      <tr>
+        <td>Total vectors</td>
+        <td>20,331 chunks in Pinecone index <code>fifa-wc-2026</code> (AWS us-east-1, cosine, 4096 dims).</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Datasets ── -->
+  <div class="section">
+    <div class="section-title">Datasets Used</div>
+
+    <p><strong style="color:var(--white)">Wikipedia Articles (85 pages scraped via WebBaseLoader)</strong></p>
+    <table>
+      <tr><th>Category</th><th>Count</th><th>Examples</th></tr>
+      <tr><td>Tournament</td><td>4</td><td>2026 FIFA World Cup, Group Stage, Squads, Venues</td></tr>
+      <tr><td>History</td><td>24</td><td>FIFA World Cup overview, Records &amp; Statistics, all 22 editions 1930–2022</td></tr>
+      <tr><td>Teams</td><td>49</td><td>All 48 qualifying nations (CONMEBOL, UEFA, CONCACAF, CAF, AFC, OFC) + Serbia</td></tr>
+      <tr><td>Players</td><td>8</td><td>Messi, Mbappé, Vinicius Jr, Bellingham, Ronaldo, Lamine Yamal, Pedri, Rodri</td></tr>
+    </table>
+
+    <p style="margin-top:20px"><strong style="color:var(--white)">CSV Datasets (6 files in <code>data/raw/</code>)</strong></p>
+    <table>
+      <tr><th>File</th><th>Content</th></tr>
+      <tr><td>matches_1930_2022.csv</td><td>Full match results history with scorers, venues, managers</td></tr>
+      <tr><td>world_cup.csv</td><td>Tournament summaries: champion, runner-up, top scorer, attendance per edition</td></tr>
+      <tr><td>schedule_2026.csv</td><td>2026 group stage fixture list with dates and venues</td></tr>
+      <tr><td>fifa_ranking_2026-06-08.csv</td><td>Current FIFA world rankings as of June 2026</td></tr>
+      <tr><td>fifa_ranking_2022-10-06.csv</td><td>FIFA rankings at time of 2022 World Cup</td></tr>
+      <tr><td>future_match_probabilities_baseline.csv</td><td>2026 match win probability predictions (baseline model)</td></tr>
+    </table>
+  </div>
+
+  <!-- ── Architecture ── -->
+  <div class="section">
+    <div class="section-title">Architecture</div>
+    <div class="prompt-block">User question
+     │
+     ▼
+Pinecone dense retriever  (cosine similarity, k=10 candidates)
+     │
+     ▼
+Cohere rerank-english-v3.0  (cross-encoder → top-5 chunks)
+     │
+     ▼
+LangGraph RAG graph
+  ├── Node 1: retrieve          fetch chunks → deduplicate → filter footnotes
+  ├── Node 2: grade_relevance   Cohere score &lt; 0.30  →  refuse node
+  ├── Node 3: answer      ────► Nebius Llama-3.3-70B-Instruct
+  ├── Node 3b: refuse     ────► "I couldn't find this in the World Cup knowledge base."
+  └── Node 4: check_hallucination
+        ├── grounded      ────► END (return answer to user)
+        └── not_grounded  ────► Node 3: answer (regenerate, max 2 retries)
+     │
+     ▼
+Cited answer + source titles displayed in Streamlit chat UI</div>
+
+    <p style="margin-top:20px"><strong style="color:var(--white)">Node Reference Table</strong></p>
+    <table>
+      <tr><th>Node</th><th>Type</th><th>LLM Calls</th><th>Description</th></tr>
+      <tr><td>retrieve</td><td>Vector Search</td><td>0</td><td>Cosine similarity search via Pinecone + Cohere reranking. Deduplicates chunks and filters Wikipedia footnote blocks.</td></tr>
+      <tr><td>grade_relevance</td><td>Score Gate</td><td>0</td><td>Reads Cohere relevance scores already on documents. Routes to refuse if max score &lt; 0.30 — no extra LLM call needed.</td></tr>
+      <tr><td>answer</td><td>LLM Node</td><td>1</td><td>Nebius Llama-3.3-70B generates a grounded, conversational answer using only the retrieved context.</td></tr>
+      <tr><td>refuse</td><td>Fixed Response</td><td>0</td><td>Returns a fixed refusal string with no citations. No hallucination possible on this path.</td></tr>
+      <tr><td>check_hallucination</td><td>LLM Node</td><td>1</td><td>Verifies the answer only contains information present in the retrieved documents. Triggers regeneration if not grounded (max 2 retries).</td></tr>
+    </table>
+    <p style="margin-top:8px; color:var(--muted); font-size:0.85rem">Total LLM calls per query (happy path): 2 — answer + hallucination check. Cohere reranking is a separate API call (not an LLM).</p>
+  </div>
+
+  <!-- ── Design Decisions ── -->
+  <div class="section">
+    <div class="section-title">Key Design Decisions</div>
+    <table>
+      <tr><th>Decision Made</th><th>Alternative Rejected</th><th>Rationale</th></tr>
+      <tr>
+        <td>LangGraph 4-node StateGraph</td>
+        <td>Simple LangChain LCEL chain</td>
+        <td>Enables conditional routing, hallucination retry loops, and state persistence across nodes — impossible with a linear chain.</td>
+      </tr>
+      <tr>
+        <td>Cohere cross-encoder reranker for relevance scoring</td>
+        <td>LLM-as-grader (1 LLM call per chunk)</td>
+        <td>Cohere is a dedicated reranking model — more accurate and far cheaper than burning a 70B LLM call per chunk. Scores are also already on the documents when grade_relevance runs, saving an extra node.</td>
+      </tr>
+      <tr>
+        <td>Hallucination checker with retry (max 2)</td>
+        <td>Single-pass generation, no verification</td>
+        <td>Catches grounding failures where the LLM added facts not present in the retrieved chunks. Regeneration is capped at MAX_RETRIES=2 to prevent infinite loops.</td>
+      </tr>
+      <tr>
+        <td>Nebius Qwen/Qwen3-Embedding-8B (4096 dims)</td>
+        <td>OpenAI text-embedding-3-small (1536 dims)</td>
+        <td>OpenAI proprietary models are not hosted on Nebius Token Factory. Qwen3-Embedding-8B is the strongest available model on the platform, with higher-dimensional vectors for richer semantic representation.</td>
+      </tr>
+      <tr>
+        <td>Metadata filters (source_type, team)</td>
+        <td>Pinecone namespaces per doc type</td>
+        <td>Single flat index with metadata filters avoids managing multiple Pinecone indexes while still allowing targeted retrieval when needed.</td>
+      </tr>
+      <tr>
+        <td>Corpus quality over size (20K clean chunks)</td>
+        <td>Keep all ~48K raw CSV chunks</td>
+        <td>Noisy CSV rows (match lineups, partial stats) were contaminating context. Smaller, higher-quality Wikipedia-first corpus improved answer precision.</td>
+      </tr>
+      <tr>
+        <td>Wikipedia footnote filtering in retrieval</td>
+        <td>Keep all ingested chunks as-is</td>
+        <td>Chunks starting with "^" are citation footnotes, not facts. They confused the LLM on player stats questions (e.g. Messi goals) and had to be filtered at retrieval time.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── RAG Strategies ── -->
+  <div class="section">
+    <div class="section-title">RAG Strategies Compared</div>
+    <table>
+      <tr><th>Dimension</th><th>Naive RAG</th><th style="color:#7EB3FF">LangGraph RAG (This Project)</th><th>Agentic RAG</th></tr>
+      <tr><td>Speed</td><td>Fast — 1 LLM call</td><td style="color:#7EB3FF">Medium — 2 LLM calls</td><td>Slowest — unbounded loops</td></tr>
+      <tr><td>Determinism</td><td>High</td><td style="color:#7EB3FF">High (gated routing)</td><td>Low — loop count varies</td></tr>
+      <tr><td>LLM Cost</td><td>Low (~1 call)</td><td style="color:#7EB3FF">Medium (~2 calls)</td><td>Lowest routing, highest total</td></tr>
+      <tr><td>Retry Logic</td><td>None</td><td style="color:#7EB3FF">Native — conditional edges</td><td>Self-directed</td></tr>
+      <tr><td>Hallucination Check</td><td>None</td><td style="color:#7EB3FF">Explicit checker node</td><td>Optional self-reflection</td></tr>
+      <tr><td>Refusal Path</td><td>Prompt-only</td><td style="color:#7EB3FF">First-class graph node</td><td>Agent decides</td></tr>
+      <tr><td>Debuggability</td><td>Easy — linear trace</td><td style="color:#7EB3FF">Medium — stateful graph</td><td>Hard — non-deterministic</td></tr>
+      <tr><td>Best For</td><td>PoC / quick demo</td><td style="color:#7EB3FF">Production RAG (this project)</td><td>Open-domain, web-search tasks</td></tr>
+    </table>
+    <p style="margin-top:10px; color:var(--muted); font-size:0.85rem">LangGraph RAG was selected because it provides explicit retry loops, hallucination checking, and conditional routing while remaining far simpler and more deterministic than a full agentic system.</p>
+  </div>
+
+  <!-- ── Prompts ── -->
+  <div class="section">
+    <div class="section-title">Prompts Used During Vibe Coding</div>
+    <p style="color:var(--muted); margin-top:12px">Key prompts given to Claude (AI coding assistant) to build each part of the system:</p>
+
+    <div class="prompt-label">1 · Initial pipeline scaffold</div>
+    <div class="prompt-block">"Build a LangChain + LangGraph RAG pipeline for FIFA World Cup 2026.
+Use Nebius Token Factory for both embeddings and LLM generation.
+Store vectors in Pinecone serverless. Add a Cohere cross-encoder reranker.
+Include a graceful refusal path when retrieved context is not relevant."</div>
+
+    <div class="prompt-label">2 · Wikipedia ingestion</div>
+    <div class="prompt-block">"Scrape all 48 qualifying team Wikipedia pages, all 22 FIFA World Cup edition pages
+(1930–2022), and 8 star player pages using WebBaseLoader. Tag each document with
+source_type (tournament / team / player / history) and team metadata."</div>
+
+    <div class="prompt-label">3 · Streamlit UI with FIFA 2026 dark theme</div>
+    <div class="prompt-block">"Build a Streamlit chat app with a FIFA 2026 dark theme.
+Background #0A0E1A, gold #D4AF37, blue #003DA5, red #C8102E.
+Add a hero banner with stat badges, 8 suggested questions in the sidebar,
+chat message bubbles, and cited sources below each answer."</div>
+
+    <div class="prompt-label">4 · LLM system prompt engineering</div>
+    <div class="prompt-block">"Write a system prompt for Llama-3.3-70B that:
+- Answers conversationally without phrases like 'according to context passages'
+- Only reports facts explicitly stated in the retrieved chunks
+- Does not calculate or infer from partial data
+- Does not add a Sources section (the app handles citations)"</div>
+
+    <div class="prompt-label">5 · Evaluation harness</div>
+    <div class="prompt-block">"Write a 15-question golden evaluation set covering: tournament facts,
+host countries, venues, historical records, team stats, player profiles,
+multi-document questions, edge cases, and one out-of-scope question.
+Score each answer by keyword hit rate and track source citation."</div>
+
+    <div class="prompt-label">6 · Bonus vibe-coded HTML frontend</div>
+    <div class="prompt-block">"Vibe-code a standalone HTML/JS chatbot UI connected to a FastAPI backend.
+Match the FIFA 2026 dark theme. Include animated typing indicators,
+chat bubbles, a suggested questions strip, and source citation cards."</div>
+  </div>
+
+  <!-- ── Iterations ── -->
+  <div class="section">
+    <div class="section-title">Iterations &amp; Problem Solving</div>
+
+    <div class="card">
+      <div class="tag fix">Bug Fix</div>
+      <h4>Embedding model 404 — OpenAI models not on Nebius</h4>
+      <p>Initial config used <code>text-embedding-3-small</code> which Nebius doesn't host. Queried the Nebius <code>/models</code> endpoint, identified <code>Qwen/Qwen3-Embedding-8B</code> (4096 dims), updated config and recreated the Pinecone index at the correct dimensionality.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Bug Fix</div>
+      <h4>Tokenized input error — LangChain pre-tokenizes before Nebius</h4>
+      <p>LangChain's <code>OpenAIEmbeddings</code> uses tiktoken to pre-tokenize text before sending to the API. Nebius only accepts raw strings. Fixed by setting <code>check_embedding_ctx_length=False</code> in the embeddings constructor.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Bug Fix</div>
+      <h4>Import errors — LangChain 1.3.7 module restructuring</h4>
+      <p><code>EnsembleRetriever</code> and <code>ContextualCompressionRetriever</code> moved from <code>langchain.retrievers</code> to <code>langchain_classic.retrievers</code> in LangChain 1.3.7. Updated all imports.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Quality Fix</div>
+      <h4>Wikipedia footnote chunks polluting LLM context</h4>
+      <p>Retrieved chunks starting with "^" (e.g., <em>"^ a b c Toby Davis..."</em>) were citation footnotes, not facts. Added <code>_deduplicate_docs()</code> to filter chunks starting with "^" or containing more than 3 URLs before passing context to the LLM.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Quality Fix</div>
+      <h4>Out-of-scope questions returning citations</h4>
+      <p>The dense retriever had no Cohere reranking, so all retrieved docs scored 1.0 and always routed to the answer node. Added Cohere reranking to the dense retriever so relevance scores are real, enabling the refusal path to fire correctly.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag feature">Expansion</div>
+      <h4>Corpus expansion: 26 → 85 Wikipedia sources</h4>
+      <p>Initial corpus had 26 sources covering only 12 teams and no historical editions. Expanded to 85 sources: all 48 qualifying nations + all 22 World Cup editions (1930–2022) + 4 tournament overview pages + 8 player pages. Vectors grew from ~48K to 20,331 higher-quality chunks.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag feature">Feature</div>
+      <h4>Conversation memory via LangGraph state</h4>
+      <p>Added <code>chat_history</code> as a list of <code>(question, answer)</code> tuples flowing through <code>WcRagState</code>. The LLM receives the last 3 exchanges as context, enabling multi-turn conversations without re-asking for context.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag feature">Feature</div>
+      <h4>Vibe-coded bonus HTML/JS frontend</h4>
+      <p>Built a standalone chatbot UI with animated typing indicators, source citation cards, and a suggested questions strip. Connected to a FastAPI backend (<code>api.py</code>) that wraps the same LangGraph RAG chain used by the Streamlit app.</p>
+    </div>
+  </div>
+
+  <!-- ── Evaluation ── -->
+  <div class="section">
+    <div class="section-title">Evaluation Results</div>
+
+    <div class="metric-row">
+      <div class="metric"><div class="value">87%</div><div class="label2">Keyword Coverage<br>(36/41, Q1–14)</div></div>
+      <div class="metric"><div class="value">100%</div><div class="label2">Source Citations<br>(15/15 answers)</div></div>
+      <div class="metric"><div class="value">1</div><div class="label2">Hard Failure<br>(Q4 — MetLife venue)</div></div>
+      <div class="metric"><div class="value">✅</div><div class="label2">Graceful Refusal<br>(Q15 out-of-scope)</div></div>
+    </div>
+
+    <table style="margin-top:24px">
+      <tr><th>#</th><th>Category</th><th>Question</th><th>Score</th></tr>
+      <tr><td>1</td><td>Tournament</td><td>How many teams in the 2026 World Cup?</td><td>✅ 2/2</td></tr>
+      <tr><td>2</td><td>Tournament</td><td>Which three countries are hosting?</td><td>✅ 3/3</td></tr>
+      <tr><td>3</td><td>Tournament</td><td>New group-stage format vs 2022?</td><td>⚡ 3/4</td></tr>
+      <tr><td>4</td><td>Tournament</td><td>Where is the 2026 final being held?</td><td>❌ 0/3</td></tr>
+      <tr><td>5</td><td>Tournament</td><td>How many venues in 2026?</td><td>⚡ 2/3</td></tr>
+      <tr><td>6</td><td>History</td><td>How many times has Brazil won?</td><td>✅ 3/3</td></tr>
+      <tr><td>7</td><td>History</td><td>All-time top scorer in World Cup history?</td><td>✅ 3/3</td></tr>
+      <tr><td>8</td><td>History</td><td>Who won the 2022 FIFA World Cup?</td><td>✅ 2/2</td></tr>
+      <tr><td>9</td><td>Team</td><td>Morocco's best-ever World Cup result?</td><td>✅ 3/3</td></tr>
+      <tr><td>10</td><td>Team</td><td>How many titles does Germany have?</td><td>✅ 3/3</td></tr>
+      <tr><td>11</td><td>Player</td><td>Messi's World Cup goals?</td><td>✅ 3/3</td></tr>
+      <tr><td>12</td><td>Player</td><td>What club does Mbappé play for?</td><td>✅ 2/2</td></tr>
+      <tr><td>13</td><td>Multi-doc</td><td>Argentina vs France titles comparison?</td><td>✅ 4/4</td></tr>
+      <tr><td>14</td><td>Edge</td><td>Who scored the golden goal in a World Cup?</td><td>⚡ 3/4</td></tr>
+      <tr><td>15</td><td>Out-of-scope</td><td>Attendance at 2026 final?</td><td>✅ Refused correctly</td></tr>
+    </table>
+
+    <p style="margin-top:20px"><strong style="color:var(--white)">Failure analysis — Q4 (MetLife Stadium)</strong></p>
+    <p>The retrieved chunks for "Where is the 2026 World Cup final?" returned high-level hosting overview text but not the MetLife Stadium / East Rutherford detail. The venue page was ingested but Cohere ranked general tournament overview chunks higher. Fix: self-query metadata filtering to narrow retrieval to <code>source_type=tournament</code> for venue questions.</p>
+  </div>
+
+  <!-- ── Learnings ── -->
+  <div class="section">
+    <div class="section-title">Key Learnings &amp; Observations</div>
+    <ul>
+      <li><strong style="color:var(--white)">Most RAG failures are retrieval failures, not LLM failures.</strong> The MetLife venue question had the right chunk ingested — Cohere just ranked it below irrelevant tournament overview chunks. The LLM had no chance to answer correctly because the right context never reached it.</li>
+      <li><strong style="color:var(--white)">Wikipedia footnote chunks are silent killers.</strong> Chunks starting with "^" (citation footnotes) were semantically similar to factual content but contained no useful information. Filtering them increased answer quality noticeably on player questions.</li>
+      <li><strong style="color:var(--white)">The "I don't know" path needs real relevance scores.</strong> Without Cohere reranking on the dense retriever, all documents defaulted to a similarity score of 1.0, meaning the refusal path never fired. Adding reranking to the dense path fixed out-of-scope routing.</li>
+      <li><strong style="color:var(--white)">Embedding model and vector dimensions are a coupled decision.</strong> Switching from OpenAI <code>text-embedding-3-small</code> (1536 dims) to Nebius <code>Qwen/Qwen3-Embedding-8B</code> (4096 dims) required deleting and recreating the entire Pinecone index. Make this choice once at project start.</li>
+      <li><strong style="color:var(--white)">Prompt engineering for faithfulness matters more than model size.</strong> Explicit instructions to "never say according to context" and "only report explicitly stated facts" had a larger impact on answer quality than any retrieval tuning.</li>
+      <li><strong style="color:var(--white)">Corpus quality beats corpus size.</strong> Shrinking from ~48K noisy CSV-heavy chunks to 20,331 clean Wikipedia chunks improved answer precision despite having fewer vectors.</li>
+    </ul>
+  </div>
+
+  <!-- ── What I'd improve ── -->
+  <div class="section">
+    <div class="section-title">What I Would Improve With More Time</div>
+    <ol>
+      <li><strong style="color:var(--white)">Self-query metadata filtering</strong> — LLM auto-detects <code>source_type=tournament</code> for venue questions, narrowing retrieval before Cohere reranks. Fixes the MetLife venue failure.</li>
+      <li><strong style="color:var(--white)">Parent-document retrieval</strong> — Store 256-token child chunks in Pinecone for precise matching, retrieve full 1024-token parent sections to the LLM for richer context.</li>
+      <li><strong style="color:var(--white)">Live match data pipeline</strong> — Ingest 2026 match results daily as the tournament progresses, keeping the corpus current through July 2026.</li>
+      <li><strong style="color:var(--white)">Structured player stats CSV</strong> — A dedicated CSV with career World Cup goals per player would resolve the Messi career goals ambiguity (corpus only has 2022 tournament data).</li>
+      <li><strong style="color:var(--white)">True RAGAS faithfulness scoring</strong> — Run an LLM-as-judge pass to verify each claim in the answer is entailed by the retrieved chunks, replacing keyword coverage with a proper faithfulness metric.</li>
+    </ol>
+  </div>
+
+  <!-- ── Tech stack ── -->
+  <div class="section">
+    <div class="section-title">Tech Stack</div>
+    <table>
+      <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+      <tr><td>Embeddings</td><td>Nebius Qwen/Qwen3-Embedding-8B (4096d)</td><td>Strong multilingual performance, available on Nebius Token Factory</td></tr>
+      <tr><td>Vector store</td><td>Pinecone serverless (AWS us-east-1, cosine)</td><td>Zero infrastructure, fast cosine search at 20K vectors</td></tr>
+      <tr><td>Reranker</td><td>Cohere rerank-english-v3.0</td><td>Cross-encoder quality, simple API, real relevance scores for routing</td></tr>
+      <tr><td>LLM</td><td>Nebius meta-llama/Llama-3.3-70B-Instruct</td><td>Strong instruction following, Nebius Token Factory requirement</td></tr>
+      <tr><td>Framework</td><td>LangChain + LangGraph</td><td>Low-level RAG primitives + stateful graph for routing logic</td></tr>
+      <tr><td>Primary UI</td><td>Streamlit</td><td>Rapid chat UI with session state, no frontend build step</td></tr>
+      <tr><td>Bonus UI</td><td>HTML/JS + FastAPI</td><td>Vibe-coded chatbot frontend connected to same RAG backend</td></tr>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <strong style="color:var(--white)">FIFA World Cup 2026 Fan Intelligence RAG App</strong><br>
+  The Gen Academy · Mastering Agentic AI Bootcamp · Week 2 Project<br><br>
+  Built by <span>Sharan Hegde</span> &nbsp;·&nbsp;
+  Track 2: LangChain + LangGraph &nbsp;·&nbsp;
+  Nebius Token Factory · Pinecone · Cohere · Streamlit
+</footer>
+
+</body>
+</html>
