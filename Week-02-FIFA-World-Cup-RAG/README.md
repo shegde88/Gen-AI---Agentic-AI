@@ -158,15 +158,3 @@ Results are saved to `docs/evaluation_results.json`. See `docs/evaluation_report
 | `future_match_probabilities_baseline.csv` | 2026 match win probability predictions |
 
 ---
-
-## Handout Compliance Checklist
-
-- [x] Corpus named specifically (85 Wikipedia pages + 6 CSVs)
-- [x] Faithfulness metric with result (87% keyword coverage, 100% source citations)
-- [x] Latency ceiling defined (< 8 seconds end-to-end)
-- [x] Hybrid/reranked retrieval implemented (dense + Cohere cross-encoder)
-- [x] "I don't know" path designed first (graceful refusal when context is empty or low-confidence)
-- [x] Nebius Token Factory used for BOTH embeddings and LLM generation
-- [x] 15-question evaluation set with failure analysis
-- [x] Streamlit demo UI
-- [x] Bonus vibe-coded HTML/JS chatbot frontend
