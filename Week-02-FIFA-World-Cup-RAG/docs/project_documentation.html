@@ -222,7 +222,7 @@
   <h1>FIFA World Cup 2026<br>Fan Intelligence RAG App</h1>
   <div class="subtitle">
     A production-grade Retrieval-Augmented Generation system built with LangChain + LangGraph,
-    grounded in 85 Wikipedia sources and 6 structured datasets, evaluated on 15 questions with 87% keyword coverage.
+    grounded in 96 Wikipedia sources and 6 structured datasets, evaluated on 15 questions with 87% keyword coverage.
   </div>
   <div class="badge-row">
     <span class="badge">Track 2 · Code-heavy</span>
@@ -257,7 +257,7 @@
       </tr>
       <tr>
         <td>Corpus</td>
-        <td>85 Wikipedia articles (4 tournament pages, 24 history pages covering all 22 editions 1930–2022, 49 team profiles for all 48 qualifying nations, 8 player profiles) plus 6 CSV datasets: match results 1930–2022, tournament summaries, 2026 fixture schedule, FIFA rankings (2022 &amp; 2026), and win probability predictions.</td>
+        <td>96 Wikipedia articles (15 tournament pages including 2026 overview with training camps, all 12 group stage articles A–L, venues, squads; 24 history pages covering all 22 editions 1930–2022; 49 team profiles; 8 player profiles) plus 6 CSV datasets: match results 1930–2022, tournament summaries, 2026 fixture schedule with venue/city/timezone, FIFA rankings (2022 &amp; 2026), and win probability predictions. Total: 20,539 chunks in Pinecone.</td>
       </tr>
       <tr>
         <td>Ingestion + cleaning</td>
@@ -273,7 +273,7 @@
       </tr>
       <tr>
         <td>Retrieve</td>
-        <td>Pinecone serverless (dense cosine similarity) with Cohere <code>rerank-english-v3.0</code> cross-encoder reranking. Retrieve k=10 candidates, rerank to top-5. Dense-only in the Streamlit app (BM25 requires in-memory corpus available at query time).</td>
+        <td>Pinecone serverless (dense cosine similarity) with Cohere <code>rerank-english-v3.0</code> cross-encoder reranking. Retrieve k=20 candidates (TOP_K=10 × 2), rerank to top-5. Dense-only in the Streamlit app (BM25 requires in-memory corpus available at query time).</td>
       </tr>
       <tr>
         <td>Generate</td>
@@ -289,7 +289,7 @@
       </tr>
       <tr>
         <td>Total vectors</td>
-        <td>20,331 chunks in Pinecone index <code>fifa-wc-2026</code> (AWS us-east-1, cosine, 4096 dims).</td>
+        <td>20,539 chunks in Pinecone index <code>fifa-wc-2026</code> (AWS us-east-1, cosine, 4096 dims).</td>
       </tr>
     </table>
   </div>
@@ -333,7 +333,7 @@ Cohere rerank-english-v3.0  (cross-encoder → top-5 chunks)
      ▼
 LangGraph RAG graph
   ├── Node 1: retrieve          fetch chunks → deduplicate → filter footnotes
-  ├── Node 2: grade_relevance   Cohere score &lt; 0.30  →  refuse node
+  ├── Node 2: grade_relevance   Cohere score &lt; 0.25  →  refuse node
   ├── Node 3: answer      ────► Nebius Llama-3.3-70B-Instruct
   ├── Node 3b: refuse     ────► "I couldn't find this in the World Cup knowledge base."
   └── Node 4: check_hallucination
@@ -347,7 +347,7 @@ Cited answer + source titles displayed in Streamlit chat UI</div>
     <table>
       <tr><th>Node</th><th>Type</th><th>LLM Calls</th><th>Description</th></tr>
       <tr><td>retrieve</td><td>Vector Search</td><td>0</td><td>Cosine similarity search via Pinecone + Cohere reranking. Deduplicates chunks and filters Wikipedia footnote blocks.</td></tr>
-      <tr><td>grade_relevance</td><td>Score Gate</td><td>0</td><td>Reads Cohere relevance scores already on documents. Routes to refuse if max score &lt; 0.30 — no extra LLM call needed.</td></tr>
+      <tr><td>grade_relevance</td><td>Score Gate</td><td>0</td><td>Reads Cohere relevance scores already on documents. Routes to refuse if max score &lt; 0.25 — no extra LLM call needed.</td></tr>
       <tr><td>answer</td><td>LLM Node</td><td>1</td><td>Nebius Llama-3.3-70B generates a grounded, conversational answer using only the retrieved context.</td></tr>
       <tr><td>refuse</td><td>Fixed Response</td><td>0</td><td>Returns a fixed refusal string with no citations. No hallucination possible on this path.</td></tr>
       <tr><td>check_hallucination</td><td>LLM Node</td><td>1</td><td>Verifies the answer only contains information present in the retrieved documents. Triggers regeneration if not grounded (max 2 retries).</td></tr>
@@ -492,8 +492,20 @@ chat bubbles, a suggested questions strip, and source citation cards."</div>
 
     <div class="card">
       <div class="tag feature">Expansion</div>
-      <h4>Corpus expansion: 26 → 85 Wikipedia sources</h4>
-      <p>Initial corpus had 26 sources covering only 12 teams and no historical editions. Expanded to 85 sources: all 48 qualifying nations + all 22 World Cup editions (1930–2022) + 4 tournament overview pages + 8 player pages. Vectors grew from ~48K to 20,331 higher-quality chunks.</p>
+      <h4>Corpus expansion: 26 → 85 → 96 Wikipedia sources</h4>
+      <p>Initial corpus had 26 sources. First expansion added all 48 qualifying nations, all 22 World Cup editions, and 8 player pages (85 sources). Second expansion added all 12 group stage articles (Group A–L), which include match schedules with local times, UTC offsets, venues, and live results. Final corpus: 96 Wikipedia sources + 6 CSVs = 20,539 chunks.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Schedule and timezone retrieval</h4>
+      <p>Users asking "Which team plays on June 11th?" received refusals despite schedule data being in the index. Root causes: (1) schedule CSV stored ISO dates ("2026-06-11") while users write "June 11th", causing low embedding similarity; (2) venue/timezone fields were missing. Fixes: query-time date expansion appends ISO equivalent before Pinecone; schedule CSV enriched with venue, city, UTC offset, and UTC time; Group A–L Wikipedia articles added as primary schedule sources; system prompt hardcodes host city timezone mappings (EDT/CDT/CST/PDT) so the LLM always states times correctly.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Retrieval coverage: TOP_K 5→10, threshold 0.30→0.25</h4>
+      <p>Fact-specific queries like "Belgium training camp location" failed because the relevant chunk (a multi-team table) was ranking 7th out of 10 — just outside the Cohere reranker's view. Doubled candidate pool to TOP_K=10 (20 Pinecone candidates per leg) and lowered the refusal threshold to 0.25 to improve recall on structured-data queries without introducing false positives.</p>
     </div>
 
     <div class="card">

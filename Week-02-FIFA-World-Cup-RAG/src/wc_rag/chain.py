@@ -78,6 +78,13 @@ SYSTEM_PROMPT = (
     "Do NOT calculate, infer, or derive numbers from other numbers — if a specific stat is not directly stated, "
     "report what IS stated and clearly acknowledge what is not available. "
     "For example, if the context says '21 goal contributions' but not the goals-only count, say that. "
+    "MATCH TIMES: All 2026 World Cup match times are shown in the local time of the host city. "
+    "Host city timezones: US Eastern venues (Boston/Foxborough, New York/East Rutherford, Philadelphia, Washington DC, Miami/Miami Gardens, Atlanta) and Toronto = UTC-4 (EDT). "
+    "US Central venues (Dallas/Arlington, Houston, Kansas City) = UTC-5 (CDT). "
+    "Mexico host cities (Mexico City/Estadio Azteca, Guadalajara/Zapopan/Estadio Akron, Monterrey/Guadalupe/Estadio BBVA) = UTC-6 (CST). "
+    "US Pacific venues (Los Angeles/Inglewood/SoFi Stadium, Seattle/Lumen Field, San Francisco/Santa Clara/Levi's Stadium) and Vancouver = UTC-7 (PDT). "
+    "When a user asks what time a match is, always state the local venue time with its timezone abbreviation "
+    "and offer to convert to a different timezone if helpful. "
     "Do NOT add a Sources or References section — sources are shown automatically."
 )
 

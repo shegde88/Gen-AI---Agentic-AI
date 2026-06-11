@@ -7,7 +7,7 @@
 
 ## The One-Liner
 
-> My RAG app helps football fans answer questions about teams, players, venues, and tournament history from 85 curated Wikipedia sources + 6 structured CSV datasets in a Streamlit chat UI with 87% keyword coverage and 100% source citation on in-scope questions.
+> My RAG app helps football fans answer questions about teams, players, venues, and tournament history from 96 curated Wikipedia sources + 6 structured CSV datasets in a Streamlit chat UI with 87% keyword coverage and 100% source citation on in-scope questions.
 
 ---
 
@@ -32,21 +32,21 @@ When the system cannot find a relevant answer in the knowledge base, it graceful
 | Field | Decision |
 |---|---|
 | **Use case** | Football fans ask natural-language questions about the 2026 FIFA World Cup via a Streamlit chat interface |
-| **Corpus** | 85 Wikipedia articles + 6 CSV datasets (full details below) |
+| **Corpus** | 96 Wikipedia articles + 6 CSV datasets (full details below) |
 | **Ingestion + cleaning** | WebBaseLoader targets `div#mw-content-text` to skip navigation; regex strips `[1]` citation markers and `[edit]` links; Wikipedia footnote chunks filtered at retrieval time |
 | **Ingestion + freshness** | One-time batch ingest via `scripts/ingest.py`; static corpus (no automated refresh); production deployment would re-scrape weekly during the live tournament |
 | **Chunking + embedding** | RecursiveCharacterTextSplitter at 512 tokens / 50-token overlap; embedded with Nebius `Qwen/Qwen3-Embedding-8B` (4096 dims) |
 | **Retrieve** | Pinecone serverless (dense cosine, k=10 candidates) + Cohere `rerank-english-v3.0` cross-encoder (rerank to top-5) |
 | **Generate** | Nebius `meta-llama/Llama-3.3-70B-Instruct` via LangChain's ChatOpenAI wrapper |
-| **"I don't know" path** | LangGraph `grade_relevance` node gates on Cohere relevance score < 0.30 → fixed refusal string, no hallucination |
+| **"I don't know" path** | LangGraph `grade_relevance` node gates on Cohere relevance score < 0.25 → fixed refusal string, no hallucination |
 | **Latency target** | < 8 seconds end-to-end (estimated actual: 3–6 seconds) |
-| **Total vectors** | 20,331 chunks in Pinecone |
+| **Total vectors** | 20,539 chunks in Pinecone |
 
 ---
 
 ## Datasets Used
 
-### Wikipedia Articles (85 pages)
+### Wikipedia Articles (96 pages)
 
 | Category | Count | Details |
 |---|---|---|
@@ -82,7 +82,7 @@ Cohere rerank-english-v3.0  (cross-encoder → top-5 chunks)
      ▼
 LangGraph RAG graph
   ├── Node 1: retrieve          fetch chunks → deduplicate → filter footnotes
-  ├── Node 2: grade_relevance   Cohere score < 0.30  →  refuse node
+  ├── Node 2: grade_relevance   Cohere score < 0.25  →  refuse node
   ├── Node 3: answer      ────► Nebius Llama-3.3-70B-Instruct
   ├── Node 3b: refuse     ────► "I couldn't find this in the World Cup knowledge base."
   └── Node 4: check_hallucination
@@ -98,7 +98,7 @@ Cited answer + source titles displayed in Streamlit chat UI
 | Node | Type | LLM Calls | Description |
 |---|---|---|---|
 | retrieve | Vector Search | 0 | Cosine similarity via Pinecone + Cohere reranking. Deduplicates and filters Wikipedia footnotes. |
-| grade_relevance | Score Gate | 0 | Reads Cohere scores already on documents. Routes to refuse if max score < 0.30. |
+| grade_relevance | Score Gate | 0 | Reads Cohere scores already on documents. Routes to refuse if max score < 0.25. |
 | answer | LLM Node | 1 | Nebius Llama-3.3-70B generates a grounded, conversational answer. |
 | refuse | Fixed Response | 0 | Returns fixed refusal string with no citations. No hallucination possible. |
 | check_hallucination | LLM Node | 1 | Verifies answer only contains information from retrieved docs. Triggers regeneration if not grounded (max 2 retries). |
@@ -182,8 +182,8 @@ Retrieved chunks starting with "^" (e.g., "^ a b c Toby Davis...") were citation
 ### Quality Fix 5 — Out-of-scope questions returning citations
 The dense retriever had no Cohere reranking, so all retrieved docs defaulted to a similarity score of 1.0 — the refusal path never fired. Added Cohere reranking to the dense retriever so relevance scores are real and the `grade_relevance` node works correctly.
 
-### Expansion — Corpus: 26 → 85 Wikipedia sources
-Initial corpus had only 12 team pages and no historical edition pages. Expanded to all 48 qualifying nations + all 22 World Cup editions (1930–2022). Vectors went from ~48K noisy chunks to 20,331 higher-quality chunks.
+### Expansion — Corpus: 26 → 96 Wikipedia sources
+Initial corpus had only 12 team pages and no historical edition pages. Expanded to all 48 qualifying nations + all 22 World Cup editions (1930–2022). Vectors went from ~48K noisy chunks to 20,539 higher-quality chunks.
 
 ### Feature — Conversation memory
 Added `chat_history` as a list of `(question, answer)` tuples flowing through the LangGraph `WcRagState`. The LLM receives the last 3 exchanges as context, enabling follow-up questions without re-stating context.
@@ -239,7 +239,7 @@ The retrieved chunks for "Where is the 2026 World Cup final?" returned high-leve
 
 5. **Prompt engineering for faithfulness > model size.** Telling the LLM explicitly to never say "according to the context" and to only report stated facts had more impact on answer quality than any retrieval tuning.
 
-6. **Corpus quality beats corpus size.** 20,331 clean Wikipedia chunks outperformed 48,000 noisy CSV-heavy chunks on factual precision.
+6. **Corpus quality beats corpus size.** 20,539 clean Wikipedia chunks outperformed 48,000 noisy CSV-heavy chunks on factual precision.
 
 ---
 

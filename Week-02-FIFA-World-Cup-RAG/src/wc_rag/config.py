@@ -40,8 +40,8 @@ COHERE_API_KEY = os.getenv("COHERE_API_KEY", "")
 # Larger chunks (e.g. 800) cause the embedding to average over too much text,
 # diluting the specific signal needed for precise fact retrieval.
 # ---------------------------------------------------------------------------
-TOP_K = 5                  # candidates returned by each retriever leg
+TOP_K = 10                 # candidates returned by each retriever leg
 RERANK_TOP_N = 5           # final docs kept after Cohere reranking
-MIN_RELEVANCE_SCORE = 0.30 # below this → graceful refusal, no generation
+MIN_RELEVANCE_SCORE = 0.25 # below this → graceful refusal, no generation
 CHUNK_SIZE = 512
 CHUNK_OVERLAP = 50

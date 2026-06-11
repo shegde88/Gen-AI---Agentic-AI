@@ -12,17 +12,21 @@
 User question
      │
      ▼
-Dense retriever (Pinecone cosine, k=10 candidates)
+Query pre-processing (date expansion: "June 11th" → "June 11th (2026-06-11)")
+     │
+     ▼
+Dense retriever (Pinecone cosine, k=20 candidates)
      │
      ▼
 Cohere rerank-english-v3.0 (cross-encoder → top-5)
      │
      ▼
-LangGraph RAG graph
-  ├── retrieve node       (fetch + deduplicate chunks)
-  ├── grade_relevance     (Cohere score < 0.30 → refuse)
-  ├── answer node    ───► Nebius Llama-3.3-70B-Instruct
-  └── refuse node    ───► "I couldn't find this in the World Cup knowledge base."
+LangGraph RAG graph — 4 nodes
+  ├── retrieve node           (fetch + deduplicate chunks)
+  ├── grade_relevance         (Cohere score < 0.25 → refuse)
+  ├── answer node        ───► Nebius Llama-3.3-70B-Instruct
+  ├── check_hallucination     (LLM verifies answer is grounded; retry up to 2×)
+  └── refuse node        ───► "I couldn't find this in the World Cup knowledge base."
      │
      ▼
 Cited answer + source titles
@@ -67,11 +71,12 @@ python scripts/ingest.py
 ```
 
 This will:
-- Fetch 85 Wikipedia articles (~5-7 minutes with polite crawl delays)
+- Clear the existing Pinecone index (clean re-ingest, no duplicates)
+- Fetch 96 Wikipedia articles (~8-10 minutes with polite crawl delays)
 - Load 6 CSV datasets from `data/raw/`
-- Chunk into ~512-token passages with 50-token overlap
+- Chunk into ~512-token passages with 50-token overlap (20,539 total)
 - Embed with `Qwen/Qwen3-Embedding-8B` via Nebius
-- Create and upsert to a Pinecone index named `fifa-wc-2026`
+- Upsert to a Pinecone index named `fifa-wc-2026`
 
 ### 4. Launch the app
 
@@ -130,20 +135,22 @@ python -m wc_rag.evaluation
 
 Results are saved to `docs/evaluation_results.json`. See `docs/evaluation_report.md` for the full 15-question analysis with actual scores.
 
-**Latest results:** 87% keyword coverage (36/41 keywords across 14 in-scope questions), 100% source citations, 1 hard failure (MetLife final venue — chunk ranking issue).
+**Latest results:** 87% keyword coverage (36/41 keywords across 14 in-scope questions), 100% source citations, 1 hard failure (MetLife final venue — chunk ranking issue). Retrieval improved with TOP_K=10 and MIN_RELEVANCE_SCORE=0.25.
 
 ---
 
 ## Corpus Sources
 
-### Wikipedia (85 articles)
+### Wikipedia (96 articles)
 
 | Category | Count | Details |
 |---|---|---|
-| Tournament | 4 | 2026 overview, group stage, squads, venues |
+| Tournament | 15 | 2026 overview (with training camps + venues), Groups A–L (match schedules, results, venues per group), squads, venues |
 | History | 24 | FIFA WC overview, records + all 22 editions (1930–2022) |
 | Teams | 49 | All 48 qualifying nations across CONMEBOL, UEFA, CONCACAF, CAF, AFC, OFC |
 | Players | 8 | Messi, Mbappé, Vinicius Jr, Bellingham, Ronaldo, Lamine Yamal, Pedri, Rodri |
+
+Wikipedia is the **primary source** for schedule, venue, training camp, and match result data. The Group A–L articles each contain match dates, local kick-off times with UTC offsets, and stadium details.
 
 ### CSV Datasets (6 files in `data/raw/`)
 
@@ -151,7 +158,7 @@ Results are saved to `docs/evaluation_results.json`. See `docs/evaluation_report
 |---|---|
 | `matches_1930_2022.csv` | Full match results history with scorers, venues, managers |
 | `world_cup.csv` | Tournament summaries (champion, runner-up, top scorer, attendance) |
-| `schedule_2026.csv` | 2026 group stage fixture list |
+| `schedule_2026.csv` | 2026 group stage fixtures with venue, city, local time, UTC offset, and UTC time |
 | `fifa_ranking_2026-06-08.csv` | Current FIFA rankings (June 2026) |
 | `fifa_ranking_2022-10-06.csv` | FIFA rankings at 2022 World Cup |
 | `future_match_probabilities_baseline.csv` | 2026 match win probability predictions |

@@ -2,9 +2,9 @@
 Multi-source ingestion: Wikipedia (web), PDFs, and Kaggle CSVs.
 
 Architecture:
-  load_web_documents()  → Wikipedia via WebBaseLoader (26 articles)
+  load_web_documents()  → Wikipedia via WebBaseLoader (97 articles)
   load_pdf_documents()  → any .pdf files placed in data/raw/
-  load_csv_documents()  → Kaggle WorldCup CSVs placed in data/raw/
+  load_csv_documents()  → WorldCup CSVs placed in data/raw/
   load_all_documents()  → combines all three for a full corpus ingest
 
 WHY THREE LOADERS:
@@ -55,12 +55,35 @@ SOURCES: list[dict] = [
     # ── Tournament overview ───────────────────────────────────────────────
     {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup",
      "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup"}},
-    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_group_stage",
-     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group Stage"}},
     {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_squads",
      "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Squads"}},
     {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_venues",
      "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Venues"}},
+    # ── Group stage articles (schedule, venues, match results per group) ──
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_A",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group A"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_B",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group B"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_C",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group C"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_D",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group D"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_E",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group E"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_F",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group F"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_G",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group G"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_H",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group H"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_I",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group I"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_J",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group J"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_K",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group K"}},
+    {"url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_L",
+     "metadata": {"source_type": "tournament", "team": "", "player": "", "year": "2026", "title": "2026 FIFA World Cup Group L"}},
     # ── Historical context ────────────────────────────────────────────────
     {"url": "https://en.wikipedia.org/wiki/FIFA_World_Cup",
      "metadata": {"source_type": "history", "team": "", "player": "", "year": "all", "title": "FIFA World Cup"}},
@@ -306,13 +329,21 @@ _CSV_SCHEMA: dict[str, dict] = {
 }
 
 
+_UTC_OFFSET_TO_TZ = {
+    "UTC-4": "EDT (Eastern Daylight Time)",
+    "UTC-5": "CDT (Central Daylight Time)",
+    "UTC-6": "CST (Mexico Central Standard Time)",
+    "UTC-7": "PDT (Pacific Daylight Time)",
+}
+
+
 def _enrich_schedule_row(doc: Document) -> Document:
     """
     Rewrite a schedule_2026.csv row into a natural language sentence.
 
-    CSVLoader produces "Date: 2026-06-11\nhome_team: Mexico\n..." which embeds
-    poorly for natural language date queries like "June 11th". This prepends a
-    human-readable summary so Pinecone retrieves schedule rows correctly.
+    The enriched CSV includes venue, city, and timezone columns. This function
+    produces a human-readable summary line that semantic search can match for
+    natural language queries like "June 11th" or "What time does Mexico play?"
     """
     fields: dict[str, str] = {}
     for line in doc.page_content.split("\n"):
@@ -324,21 +355,31 @@ def _enrich_schedule_row(doc: Document) -> Document:
     human_date = date_str
     try:
         dt = datetime.strptime(date_str, "%Y-%m-%d")
-        human_date = dt.strftime("%B %-d, %Y")  # "June 11, 2026"
+        human_date = dt.strftime("%B %-d, %Y")
     except ValueError:
         pass
 
     home = fields.get("home_team", "")
     away = fields.get("away_team", "")
     round_ = fields.get("Round", "match")
+    group = fields.get("Group", "")
     day = fields.get("Day", "")
-    time_ = fields.get("Time", "")
+    time_local = fields.get("time_local", "") or fields.get("Time", "")
+    utc_offset = fields.get("utc_offset", "")
+    time_utc = fields.get("time_utc", "")
+    venue = fields.get("venue", "")
+    city = fields.get("city", "")
 
-    parts = [p for p in [f"{home} vs {away}" if home and away else "",
-                         f"on {human_date}" if human_date else "",
-                         f"({day})" if day else "",
-                         f"at {time_}" if time_ else ""] if p]
-    summary = f"2026 FIFA World Cup {round_}: {' '.join(parts)}"
+    tz_label = _UTC_OFFSET_TO_TZ.get(utc_offset, utc_offset)
+    group_label = f"Group {group}" if group else round_
+
+    time_part = (f"at {time_local} {tz_label} ({time_utc} UTC)" if time_local and tz_label
+                 else f"at {time_local}" if time_local else "")
+    venue_part = f"at {venue}, {city}" if venue and city else (f"in {city}" if city else "")
+    day_part = f"({day})" if day else ""
+
+    parts = [p for p in [f"{home} vs {away}", f"on {human_date}", day_part, time_part, venue_part] if p]
+    summary = f"2026 FIFA World Cup {group_label}: {' '.join(parts)}"
 
     updated_content = doc.page_content.replace(f"Date: {date_str}", f"Date: {human_date}")
     return Document(page_content=f"{summary}\n\n{updated_content}", metadata=doc.metadata)
