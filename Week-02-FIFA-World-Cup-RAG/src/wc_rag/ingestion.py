@@ -465,6 +465,15 @@ def load_csv_documents() -> list[Document]:
                 })
             if csv_path.name == "schedule_2026.csv":
                 rows = [_enrich_schedule_row(row) for row in rows]
+                # Mark the first match (rows are in chronological CSV order) as the opening match.
+                # This adds "opening match" to the semantic anchor so queries like
+                # "What time does the opening match kick off?" retrieve the right chunk.
+                if rows:
+                    opening = rows[0]
+                    rows[0] = Document(
+                        page_content=f"Opening match of the 2026 FIFA World Cup. {opening.page_content}",
+                        metadata=opening.metadata,
+                    )
             elif csv_path.name == "training_camps_2026.csv":
                 rows = [_enrich_training_camp_row(row) for row in rows]
             documents.extend(rows)

@@ -21,7 +21,7 @@
     "id": 2,
     "category": "tournament",
     "question": "Which three countries are hosting the 2026 FIFA World Cup?",
-    "answer": "The three countries hosting the 2026 FIFA World Cup are the United States, Canada, and Mexico. This will be the first time a World Cup has been shared by three host nations.",
+    "answer": "The three countries hosting the 2026 FIFA World Cup are the United States, Canada, and Mexico.",
     "citations": [
       "FIFA World Cup",
       "2002 FIFA World Cup"
@@ -39,13 +39,12 @@
     "id": 3,
     "category": "tournament",
     "question": "What is the new group-stage format for the 2026 World Cup compared to 2022?",
-    "answer": "The new group-stage format for the 2026 World Cup features 12 groups of four teams each. In contrast to the originally planned format of 16 groups of three teams each, this revised format allows the top 8 third-placed teams to join the group winners and runners-up in a round of 32 knockout stage. The 2022 World Cup had a different format, with 8 groups of four teams each, but the specifics of the 2022 format are not detailed here.",
+    "answer": "The new group-stage format for the 2026 World Cup features 12 groups of four teams each. In contrast to the initially proposed format, which had 16 groups of three teams, and presumably different from the 2022 World Cup format, the 2026 tournament will have the top 8 third-placed teams joining the group winners and runners-up in a round of 32 knockout stage. The 2022 World Cup format is not explicitly stated in the provided context, so a direct comparison to its specifics is not available.",
     "citations": [
       "FIFA World Cup",
-      "2026 FIFA World Cup",
-      "2026 FIFA World Cup Group B"
+      "2026 FIFA World Cup Group E"
     ],
-    "docs_retrieved": 3,
+    "docs_retrieved": 2,
     "keyword_hits": [
       "16",
       "groups",
@@ -91,7 +90,7 @@
     "id": 6,
     "category": "history",
     "question": "How many times has Brazil won the FIFA World Cup?",
-    "answer": "Brazil has won the FIFA World Cup five times: in 1958, 1962, 1970, 1994, and 2002.",
+    "answer": "Brazil has won the FIFA World Cup five times: 1958, 1962, 1970, 1994, and 2002 \u2014 five titles.",
     "citations": [
       "Brazil National Football Team",
       "FIFA World Cup"
@@ -109,7 +108,7 @@
     "id": 7,
     "category": "history",
     "question": "Who is the all-time top scorer in FIFA World Cup history?",
-    "answer": "The all-time top scorer in FIFA World Cup history is Miroslav Klose of Germany, with 16 goals scored between 2002 and 2014.",
+    "answer": "Miroslav Klose of Germany is the all-time top scorer in FIFA World Cup history, with 16 goals scored between 2002 and 2014.",
     "citations": [
       "FIFA World Cup Records and Statistics",
       "FIFA World Cup"
@@ -127,7 +126,7 @@
     "id": 8,
     "category": "history",
     "question": "Which country won the 2022 FIFA World Cup?",
-    "answer": "The country that won the 2022 FIFA World Cup is Argentina, marking their 3rd title.",
+    "answer": "Argentina won the 2022 FIFA World Cup \u2014 their third title.",
     "citations": [
       "2022 FIFA World Cup",
       "FIFA World Cup Records and Statistics",
@@ -145,7 +144,7 @@
     "id": 9,
     "category": "team",
     "question": "What was Morocco's best-ever result at a FIFA World Cup?",
-    "answer": "Morocco's best-ever result at a FIFA World Cup was in the 2022 tournament, where they finished in fourth place and became the first African nation to reach the semi-finals of the tournament.",
+    "answer": "Morocco's best-ever result at a FIFA World Cup was in the 2022 tournament, where they finished in fourth place, becoming the first African nation to reach the semi-finals of the tournament.",
     "citations": [
       "Morocco National Football Team",
       "1998 FIFA World Cup"
@@ -163,7 +162,7 @@
     "id": 10,
     "category": "team",
     "question": "How many World Cup titles does Germany have?",
-    "answer": "Germany has won the FIFA World Cup four times, with their titles coming in 1954, 1974, 1990, and 2014.",
+    "answer": "Germany has won the FIFA World Cup four times: in 1954, 1974, 1990, and 2014.",
     "citations": [
       "Germany National Football Team"
     ],
@@ -214,7 +213,7 @@
     "id": 13,
     "category": "multi-doc",
     "question": "Compare the number of World Cup titles won by Argentina and France.",
-    "answer": "Argentina has won the FIFA World Cup 3 times (1978, 1986, 2022), while France has won the tournament 2 times (1998, 2018). So, Argentina has one more World Cup title than France.",
+    "answer": "Argentina has won the World Cup 3 times (1978, 1986, 2022), while France has won the World Cup 2 times (1998, 2018). Therefore, Argentina has one more World Cup title than France.",
     "citations": [
       "Argentina National Football Team",
       "FIFA World Cup",
@@ -234,7 +233,7 @@
     "id": 14,
     "category": "edge",
     "question": "Who scored the golden goal to win a World Cup in extra time?",
-    "answer": "No player scored a golden goal to win a World Cup in extra time, as the \"golden goal\" rule was not mentioned in the context of any World Cup final. However, several players scored winning goals in extra time, including Mario G\u00f6tze in the 2014 World Cup, Eder in the 2016 European Championship (not a World Cup), and Andr\u00e9s Iniesta in the 2010 World Cup.",
+    "answer": "No player scored a golden goal to win a World Cup in extra time, as the \"golden goal\" rule was not mentioned in the context of any World Cup final. However, several players scored winning goals in extra time: Mario G\u00f6tze for Germany in 2014, Eder for Portugal in the Euro 2016 final (not a World Cup), and Andr\u00e9s Iniesta for Spain in 2010. Geoff Hurst also scored in extra time for England in 1966, but it's not clear if his goal was the immediate winner.",
     "citations": [
       "2006 FIFA World Cup",
       "2014 FIFA World Cup",
@@ -251,7 +250,7 @@
     "id": 15,
     "category": "out-of-scope",
     "question": "What was the attendance figure for the 2026 World Cup final match?",
-    "answer": "The attendance figure for the 2026 World Cup final match is not available. The 2026 World Cup has not yet taken place, with the final scheduled for July 19, 2026. Therefore, this data is not yet available.",
+    "answer": "The attendance figure for the 2026 World Cup final match is not yet available, as the tournament has not yet taken place.",
     "citations": [
       "2026 FIFA World Cup",
       "FIFA World Cup Records and Statistics",
@@ -260,10 +259,9 @@
     "docs_retrieved": 9,
     "keyword_hits": [
       "not yet available",
-      "not available",
       "attendance"
     ],
-    "relevance_score": 3,
+    "relevance_score": 2,
     "faithfulness_note": "Grounded \u2014 answer cites sources"
   }
 ]

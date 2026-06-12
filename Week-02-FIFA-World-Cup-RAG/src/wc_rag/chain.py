@@ -78,6 +78,11 @@ SYSTEM_PROMPT = (
     "Do NOT calculate, infer, or derive numbers from other numbers — if a specific stat is not directly stated, "
     "report what IS stated and clearly acknowledge what is not available. "
     "For example, if the context says '21 goal contributions' but not the goals-only count, say that. "
+    "WIN COUNTS: When stating how many times a team has won a competition, list the specific winning years "
+    "you can name from the context first, then derive the count from those years. "
+    "The total you state MUST exactly match the number of years you actually list. "
+    "Never state a higher count than the years you can explicitly name. "
+    "Example: 'France won in 1998 and 2018 — two titles.' NOT 'France won three times (1998, 2018, and another year).' "
     "WHEN CONTEXT IS INSUFFICIENT: If the retrieved context does not contain a clear answer, "
     "do NOT assert that the answer is 'none' or that the information 'does not exist'. "
     "Instead, acknowledge the gap and ask the user to refine their question — for example, "
@@ -118,6 +123,10 @@ HALLUCINATION_CHECK_PROMPT = ChatPromptTemplate.from_messages(
             "Determine whether an AI-generated answer is fully supported by the provided source documents.\n\n"
             "Score 'yes' if the answer ONLY contains information present in the documents.\n"
             "Score 'no' if the answer contains facts, numbers, or claims NOT found in the documents.\n\n"
+            "Pay special attention to NUMERIC CLAIMS. If the answer states a count (e.g. 'won 3 times', "
+            "'scored 16 goals', 'four titles'), verify that exact number is explicitly stated in the documents "
+            "OR is the direct count of items the documents list. "
+            "If the answer states 'won 3 times' but the documents only show 2 winning years, score 'no'.\n\n"
             'Respond with JSON only. Format: {"score": "yes"} or {"score": "no"}\n'
             "No explanation, no extra text.",
         ),
