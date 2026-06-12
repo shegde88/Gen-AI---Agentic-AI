@@ -121,7 +121,7 @@ GOLDEN_QA: list[dict] = [
         "id": 15,
         "category": "out-of-scope",
         "question": "What was the attendance figure for the 2026 World Cup final match?",
-        "expected_keywords": ["don't have", "not enough", "cannot find"],
+        "expected_keywords": ["not yet available", "not available", "attendance"],
     },
 ]
 

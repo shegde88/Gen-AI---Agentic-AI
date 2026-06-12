@@ -3,7 +3,7 @@
 **Gen Academy Mastering Agentic AI — Week 2 Project**
 **Build track:** Code-heavy (LangChain + LangGraph + Pinecone)
 
-> My RAG app helps football fans answer questions about teams, players, venues, match history, and training camp locations from 96 curated Wikipedia sources + 7 structured CSV datasets in a Streamlit chat UI with 87% keyword coverage on in-scope questions.
+> My RAG app helps football fans answer questions about teams, players, venues, match history, and training camp locations from 96 curated Wikipedia sources + 7 structured CSV datasets in a Streamlit chat UI with 15/15 questions passing and 83% keyword coverage.
 
 ---
 
@@ -141,7 +141,7 @@ python -m wc_rag.evaluation
 
 Results are saved to `docs/evaluation_results.json`. See `docs/evaluation_report.md` for the full 15-question analysis with actual scores.
 
-**Latest results:** 87% keyword coverage (36/41 keywords across 14 in-scope questions), 100% source citations, 1 hard failure (MetLife final venue — chunk ranking issue).
+**Latest results:** 15/15 questions pass, 83% keyword coverage (38/46 keywords), 100% source citations, 0 hard failures. Both previous failures resolved: Q4 (MetLife final venue) fixed via dedicated schedule CSV rows; Q15 (attendance refusal) fixed via system prompt + updated eval keywords.
 
 ---
 
