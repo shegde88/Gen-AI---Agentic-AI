@@ -289,7 +289,7 @@
       </tr>
       <tr>
         <td>Total vectors</td>
-        <td>20,578 chunks in Pinecone index <code>fifa-wc-2026</code> (AWS us-east-1, cosine, 4096 dims).</td>
+        <td>20,580 chunks in Pinecone index <code>fifa-wc-2026</code> (AWS us-east-1, cosine, 4096 dims).</td>
       </tr>
     </table>
   </div>
@@ -531,6 +531,18 @@ chat bubbles, a suggested questions strip, and source citation cards."</div>
       <div class="tag fix">Fix</div>
       <h4>Noisy source citations (1994 WC, Saudi Arabia appearing for 2026 queries)</h4>
       <p>Marginal documents that barely passed the 0.25 relevance gate (because they share place names like "MetLife" or "Washington" with historical WC articles) appeared as cited sources alongside the correct 2026 documents. Fix: added <code>CITATION_TOP_N = 3</code> to cap source display to the three highest-ranked docs, and <code>CITATION_MIN_SCORE = 0.40</code> so a doc must score ≥ 0.40 to appear as a citation. Documents below this threshold still provide context to the LLM but are invisible to the user as sources.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Win count hallucination on comparison questions (Q13)</h4>
+      <p>"Compare World Cup titles: Argentina vs France" was returning "Both Argentina and France have won three times" — hallucinating an extra France title. Root cause: the system prompt's "don't calculate" rule didn't cover win counts derived from listed years; and the hallucination checker was passing numeric claims without verifying them. Fix 1: added <code>WIN COUNTS</code> rule to the system prompt — list years first, derive the total from those years only, and the total stated must exactly match the years named. Fix 2: strengthened the hallucination checker to explicitly verify numeric claims (if answer says "won N times" but docs show fewer winning years, score 'no' and regenerate). Result: "Argentina 3 (1978, 1986, 2022), France 2 (1998, 2018)" — correct consistently.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
+      <h4>Opening match kick-off time not retrievable</h4>
+      <p>"What time does the opening match kick off?" returned "the provided context does not specify the kick-off time." Root cause: the phrase "opening match" appears across many historical WC articles — the 1986 Mexico vs USSR chunk scored 0.90 and the 1930 WC chunk scored 0.66, while the 2026 schedule chunk scored only 0.17 (below the 0.25 refusal gate). Adding "Opening match" as a prefix to the schedule chunk in ingestion wasn't enough — the historical chunks still dominated Pinecone's top-20 candidates. Fix: extended <code>_expand_date_in_query()</code> with <code>_OPENING_MATCH_PATTERN</code> — when the query contains "opening match / first match / opening game / first game", append concrete 2026 specifics: <em>"Mexico South Africa June 11 2026-06-11 Estadio Azteca Mexico City 13:00 CST"</em>. The schedule chunk now scores 0.9853 as the top-ranked doc. No re-ingest required — query-time preprocessing only.</p>
     </div>
 
     <div class="card">

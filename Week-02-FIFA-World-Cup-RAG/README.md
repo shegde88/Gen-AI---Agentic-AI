@@ -79,7 +79,7 @@ This will:
 - Load 7 CSV datasets from `data/raw/`
 - Chunk into ~512-token passages with 50-token overlap
 - Embed with `Qwen/Qwen3-Embedding-8B` via Nebius
-- Upsert to a Pinecone index named `fifa-wc-2026`
+- Upsert to a Pinecone index named `fifa-wc-2026` (~20,580 chunks)
 
 ### 4. Launch the app
 
