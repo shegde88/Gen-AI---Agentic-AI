@@ -211,13 +211,26 @@ _DATE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# Phrases that refer to the 2026 WC opening match — dense retrieval for these
+# returns historical WC opening matches (1986, 1930 etc.) instead of the 2026
+# schedule chunk.  Appending the concrete 2026 details shifts the embedding
+# close enough for Pinecone to surface the right row.
+_OPENING_MATCH_PATTERN = re.compile(
+    r"\b(opening match|opening game|first match|first game)\b",
+    re.IGNORECASE,
+)
+_OPENING_MATCH_EXPANSION = (
+    " 2026 FIFA World Cup opening match Mexico South Africa June 11 2026-06-11 "
+    "Estadio Azteca Mexico City 13:00 CST"
+)
+
 
 def _expand_date_in_query(question: str) -> str:
     """
     Append ISO date format alongside any natural language date in the query.
     "Which teams play on June 11th?" → "... June 11th (2026-06-11)?"
-    Schedule CSV rows store dates as 2026-MM-DD; this bridges the semantic gap
-    so Pinecone returns the right rows without requiring re-ingestion.
+    Also expands "opening match / first game" to include 2026-specific terms so
+    Pinecone candidates include the schedule chunk rather than historical WC pages.
     """
     def _to_iso(m: re.Match) -> str:
         month = _MONTH_NUMS.get(m.group(1).lower(), 0)
@@ -226,7 +239,10 @@ def _expand_date_in_query(question: str) -> str:
             return f"{m.group(0)} (2026-{month:02d}-{day:02d})"
         return m.group(0)
 
-    return _DATE_PATTERN.sub(_to_iso, question)
+    expanded = _DATE_PATTERN.sub(_to_iso, question)
+    if _OPENING_MATCH_PATTERN.search(expanded):
+        expanded = expanded + _OPENING_MATCH_EXPANSION
+    return expanded
 
 
 # ---------------------------------------------------------------------------
