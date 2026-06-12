@@ -14,7 +14,8 @@ import streamlit as st
 
 from wc_rag.chain import ask
 from wc_rag.indexing import load_vector_store
-from wc_rag.retriever import build_dense_retriever
+from wc_rag.ingestion import chunk_documents, load_csv_documents
+from wc_rag.retriever import build_hybrid_retriever
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -211,10 +212,16 @@ with st.sidebar:
 # Load retriever (cached across reruns)
 # ---------------------------------------------------------------------------
 
+@st.cache_resource(show_spinner="Loading CSV knowledge base...")
+def get_csv_chunks():
+    return chunk_documents(load_csv_documents())
+
+
 @st.cache_resource(show_spinner="Connecting to Pinecone...")
 def get_retriever():
     vs = load_vector_store()
-    return build_dense_retriever(vs)
+    csv_chunks = get_csv_chunks()
+    return build_hybrid_retriever(vs, csv_chunks)
 
 # ---------------------------------------------------------------------------
 # Chat interface

@@ -2,7 +2,7 @@
 FastAPI backend for the vibe-coded chatbot UI.
 
 WHY FASTAPI AND NOT STREAMLIT:
-  The HTML/JS front-end runs separately from Streamlit and renders
+  The bonus deliverable requires an HTML/JS front-end. Streamlit renders
   server-side Python — a browser can't talk to it via fetch(). FastAPI
   exposes a proper REST endpoint that the HTML page can call with fetch().
 
@@ -25,7 +25,8 @@ from pydantic import BaseModel
 
 from wc_rag.chain import ask
 from wc_rag.indexing import load_vector_store
-from wc_rag.retriever import build_hybrid_retriever, build_dense_retriever
+from wc_rag.ingestion import chunk_documents, load_csv_documents
+from wc_rag.retriever import build_hybrid_retriever
 
 app = FastAPI(title="FIFA World Cup 2026 RAG API")
 
@@ -47,7 +48,8 @@ def _get_retriever():
     global _retriever
     if _retriever is None:
         vs = load_vector_store()
-        _retriever = build_dense_retriever(vs)
+        csv_chunks = chunk_documents(load_csv_documents())
+        _retriever = build_hybrid_retriever(vs, csv_chunks)
     return _retriever
 
 

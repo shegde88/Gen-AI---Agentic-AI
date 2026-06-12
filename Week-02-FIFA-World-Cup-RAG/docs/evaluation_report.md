@@ -21,7 +21,7 @@
 | **Corpus** | 96 Wikipedia articles — 15 tournament pages (2026 overview, squads, venues, Groups A–L), 24 history pages (all 22 editions 1930–2022 + overview + records), 49 team profiles (all 48 qualifying nations), 8 player profiles. Plus 7 CSV datasets: match results 1930–2022, tournament summaries, 2026 group stage + knockout schedule, training camps 2026, FIFA rankings (2022 & 2026), win probabilities |
 | **Ingestion + cleaning** | WebBaseLoader targets `div#mw-content-text` to skip navigation; regex strips `[1]` citation markers and `[edit]` links; Wikipedia footnote chunks filtered at retrieval time; schedule + training camp rows enriched into NL summaries |
 | **Chunking + embedding** | RecursiveCharacterTextSplitter, 512 tokens / 50 overlap; `Qwen/Qwen3-Embedding-8B` (4096 dims) via Nebius Token Factory |
-| **Retrieve** | Pinecone serverless (dense cosine) + Cohere `rerank-english-v3.0` cross-encoder; top-k = 5 |
+| **Retrieve** | Hybrid: Pinecone dense cosine + BM25 (EnsembleRetriever, 60/40 RRF) → Cohere `rerank-english-v3.0` cross-encoder; top-k = 5 |
 | **Generate** | Nebius `meta-llama/Llama-3.3-70B-Instruct` via LangChain ChatOpenAI wrapper |
 | **"I don't know" path** | `grade_relevance` node gates on Cohere relevance score < 0.25 → fixed refusal string; follow-up questions bypass gate via `_is_followup()` |
 | **Latency target** | < 8 seconds end-to-end |

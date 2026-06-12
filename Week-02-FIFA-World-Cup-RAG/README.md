@@ -18,8 +18,10 @@ Query pre-processing
   └── Follow-up detection: short contextual questions bypass retrieval gate
      │
      ▼
-Dense retriever (Pinecone cosine, k=20 candidates)
-     │
+Hybrid retriever — Stage 1: two-leg candidate generation (k=20 each)
+  ├── Dense leg: Pinecone cosine similarity (semantic matching)
+  └── Sparse leg: BM25 over CSV chunks (exact token matching: dates, names, scores)
+     │ Reciprocal Rank Fusion (60% dense, 40% BM25)
      ▼
 Cohere rerank-english-v3.0 (cross-encoder → top-5)
      │
@@ -43,6 +45,7 @@ Cited answer (top-3 sources scoring ≥ 0.40)
 |---|---|
 | Embeddings | Nebius `Qwen/Qwen3-Embedding-8B` (4096d) |
 | Vector store | Pinecone serverless (AWS us-east-1, cosine) |
+| Retriever | Hybrid: dense (Pinecone) + BM25 via EnsembleRetriever (60/40 RRF) |
 | Reranker | Cohere `rerank-english-v3.0` cross-encoder |
 | LLM | Nebius `meta-llama/Llama-3.3-70B-Instruct` |
 | Framework | LangChain + LangGraph |
@@ -121,7 +124,7 @@ uvicorn api:app --reload --port 8000
 │       ├── config.py              API keys + RAG tuning constants
 │       ├── ingestion.py           WebBaseLoader + CSV/PDF loaders + enrichment
 │       ├── indexing.py            Pinecone index creation + embedding
-│       ├── retriever.py           Dense + Cohere reranker retriever
+│       ├── retriever.py           Hybrid BM25+dense retriever + Cohere reranker
 │       ├── chain.py               LangGraph RAG + conversation memory
 │       └── evaluation.py          15-question golden eval runner
 └── docs/
@@ -179,6 +182,7 @@ Each row is enriched into a natural language summary before indexing so location
 | Decision | Rationale |
 |---|---|
 | LangGraph 4-node StateGraph | Enables conditional routing, hallucination retry loops, and a first-class refusal path |
+| Hybrid BM25 + dense retrieval | EnsembleRetriever merges dense (Pinecone cosine) and sparse (BM25) legs via Reciprocal Rank Fusion — dense captures intent, BM25 catches exact tokens like "1994", "Klose", "4-1" that dense embeddings dilute |
 | `_expand_date_in_query()` | Bridges "June 11th" (natural language) ↔ "2026-06-11" (ISO dates in CSV) at query time — no re-ingest needed |
 | Follow-up bypass in `grade_relevance` | Short contextual questions ("Yes in PST?") route to the answer node via `chat_history` instead of being refused for having no Pinecone match |
 | `CITATION_TOP_N=3` + `CITATION_MIN_SCORE=0.40` | Only top-3 docs scoring ≥ 0.40 are shown as sources — prevents marginal historical chunks (1994/2006 WC) from appearing as citations |
