@@ -184,6 +184,7 @@ Each row is enriched into a natural language summary before indexing so location
 | `CITATION_TOP_N=3` + `CITATION_MIN_SCORE=0.40` | Only top-3 docs scoring ≥ 0.40 are shown as sources — prevents marginal historical chunks (1994/2006 WC) from appearing as citations |
 | `training_camps_2026.csv` with per-team enrichment | Dense Wikipedia table chunks score poorly for location queries; one dedicated chunk per team fixes this |
 | `clear_index()` before every re-ingest | Prevents stale or duplicate vectors accumulating across ingest runs |
+| Era suppression in `_collect_citations()` | When a 2026-specific source qualifies as a citation, historical year-specific articles (e.g. "2010 FIFA World Cup") are excluded — they share vocabulary but are not relevant to the answer |
 
 ---
 

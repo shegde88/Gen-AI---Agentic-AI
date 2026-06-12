@@ -547,6 +547,12 @@ chat bubbles, a suggested questions strip, and source citation cards."</div>
 
     <div class="card">
       <div class="tag fix">Fix</div>
+      <h4>Historical WC articles appearing as citations for 2026 queries</h4>
+      <p>Answers about 2026 training camps and venues were citing "2010 FIFA World Cup" as a source alongside the correct 2026 articles. Root cause: the 2010 WC article scores above <code>CITATION_MIN_SCORE = 0.40</code> because it shares "base camp" and "training facility" vocabulary with the query — the score alone can't distinguish era. Fix: added era suppression to <code>_collect_citations()</code>. If any qualifying citation (score ≥ threshold) is a 2026-specific source (<code>year == "2026"</code> or title contains "2026"), historical year-specific articles are excluded from the sources panel. Team and player articles (<code>year = "all"</code>) always display regardless of era. Historical articles still appear correctly when no 2026 source qualifies — e.g. "Who won the 1994 World Cup?" correctly cites "1994 FIFA World Cup" because no 2026 source is in the result set for that query.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag fix">Fix</div>
       <h4>Training camp location queries failing</h4>
       <p>"Which team has a base camp in Washington state?" returned "None of the teams have a base camp there." Root cause: training camp data lives in one large Wikipedia table chunk covering all 48 teams. For a location-based query, "Washington" appears once among 48 city entries — no semantic anchor per team. After footnote chunk filtering, only the 2006 and 2010 WC base camp chunks remained above threshold. Fix: created <code>training_camps_2026.csv</code> with one row per team (48 rows), each enriched by <code>_enrich_training_camp_row()</code> into a two-sentence natural language summary: <em>"Belgium's 2026 FIFA World Cup base camp is at Seattle Sounders FC Performance Centre in Renton, Washington, USA. Belgium will train and stay at Seattle Sounders FC Performance Centre (Renton, Washington) during the 2026 FIFA World Cup."</em> Each team now has a dedicated, semantically-anchored chunk. Washington state teams: Belgium (Renton) and Egypt (Spokane, Gonzaga University).</p>
     </div>
