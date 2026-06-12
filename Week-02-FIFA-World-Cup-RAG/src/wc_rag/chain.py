@@ -150,12 +150,25 @@ def _format_context(documents: list[Document]) -> str:
 def _collect_citations(documents: list[Document]) -> list[str]:
     # Docs arrive sorted by Cohere score (highest first).
     # Only cite the top-N AND only when the score clears CITATION_MIN_SCORE.
-    # Marginal docs (e.g. historical WC articles that share a place-name with
-    # a 2026 query) can still feed context to the LLM without appearing as sources.
+    # Marginal docs can still feed context to the LLM without appearing as sources.
+    #
+    # Era suppression: if at least one qualifying citation is 2026-specific
+    # (year=="2026" or title contains "2026"), suppress any historical year-specific
+    # articles (year set to a specific past year).  This prevents e.g. "2010 FIFA
+    # World Cup" appearing alongside a "2026 FIFA World Cup Training Camps" answer
+    # just because both articles use "base camp" vocabulary.
+    qualifying = [
+        doc for doc in documents[:CITATION_TOP_N]
+        if float(doc.metadata.get("relevance_score", doc.metadata.get("score", 0.0))) >= CITATION_MIN_SCORE
+    ]
+    has_2026 = any(
+        doc.metadata.get("year") == "2026" or "2026" in doc.metadata.get("title", "")
+        for doc in qualifying
+    )
     seen: list[str] = []
-    for doc in documents[:CITATION_TOP_N]:
-        score = float(doc.metadata.get("relevance_score", doc.metadata.get("score", 0.0)))
-        if score < CITATION_MIN_SCORE:
+    for doc in qualifying:
+        year = doc.metadata.get("year", "")
+        if has_2026 and year and year not in ("2026", "all"):
             continue
         label = doc.metadata.get("title") or doc.metadata.get("source_url", "unknown")
         if label not in seen:
