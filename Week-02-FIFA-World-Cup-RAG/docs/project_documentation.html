@@ -273,7 +273,7 @@
       </tr>
       <tr>
         <td>Retrieve</td>
-        <td>Pinecone serverless (dense cosine similarity) with Cohere <code>rerank-english-v3.0</code> cross-encoder reranking. Retrieve k=20 candidates (TOP_K=10 × 2), rerank to top-5. Dense-only in the Streamlit app (BM25 requires in-memory corpus available at query time).</td>
+        <td>Hybrid retrieval: Pinecone dense cosine (k=10) + BM25 sparse over CSV chunks (k=10), fused via Reciprocal Rank Fusion (60% dense / 40% BM25) using LangChain <code>EnsembleRetriever</code>. BM25 index built from CSV chunks at app startup (cached via <code>@st.cache_resource</code> — no Wikipedia re-fetch required). Merged candidate list reranked to top-5 by Cohere <code>rerank-english-v3.0</code> cross-encoder. Dense captures semantic intent; BM25 catches exact tokens like dates, scorelines, and player names that embeddings dilute.</td>
       </tr>
       <tr>
         <td>Generate</td>
@@ -326,8 +326,10 @@
     <div class="prompt-block">User question
      │
      ▼
-Pinecone dense retriever  (cosine similarity, k=10 candidates)
-     │
+Hybrid retriever — Stage 1: two-leg candidate generation (k=10 each)
+  ├── Dense leg:  Pinecone cosine similarity (semantic matching)
+  └── Sparse leg: BM25 over CSV chunks (exact token matching: dates, names, scores)
+     │ Reciprocal Rank Fusion (60% dense, 40% BM25)
      ▼
 Cohere rerank-english-v3.0  (cross-encoder → top-5 chunks)
      │
@@ -365,6 +367,11 @@ Cited answer + source titles displayed in Streamlit chat UI</div>
         <td>LangGraph 4-node StateGraph</td>
         <td>Simple LangChain LCEL chain</td>
         <td>Enables conditional routing, hallucination retry loops, and state persistence across nodes — impossible with a linear chain.</td>
+      </tr>
+      <tr>
+        <td>Hybrid BM25 + dense retrieval (EnsembleRetriever)</td>
+        <td>Dense-only Pinecone retrieval</td>
+        <td>EnsembleRetriever fuses both legs via Reciprocal Rank Fusion — dense captures semantic intent, BM25 catches exact tokens like "1994", "Klose", "4-1" that embeddings dilute. BM25 index built from CSV chunks at startup (fast, no Wikipedia re-fetch).</td>
       </tr>
       <tr>
         <td>Cohere cross-encoder reranker for relevance scoring</td>

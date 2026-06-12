@@ -36,7 +36,7 @@ When the system cannot find a relevant answer in the knowledge base, it graceful
 | **Ingestion + cleaning** | WebBaseLoader targets `div#mw-content-text` to skip navigation; regex strips `[1]` citation markers and `[edit]` links; Wikipedia footnote chunks filtered at retrieval time |
 | **Ingestion + freshness** | One-time batch ingest via `scripts/ingest.py`; static corpus (no automated refresh); production deployment would re-scrape weekly during the live tournament |
 | **Chunking + embedding** | RecursiveCharacterTextSplitter at 512 tokens / 50-token overlap; embedded with Nebius `Qwen/Qwen3-Embedding-8B` (4096 dims) |
-| **Retrieve** | Pinecone serverless (dense cosine, k=10 candidates) + Cohere `rerank-english-v3.0` cross-encoder (rerank to top-5) |
+| **Retrieve** | Hybrid: Pinecone dense (cosine, k=10) + BM25 sparse over CSV chunks, fused via Reciprocal Rank Fusion (60/40) → Cohere `rerank-english-v3.0` cross-encoder (top-5) |
 | **Generate** | Nebius `meta-llama/Llama-3.3-70B-Instruct` via LangChain's ChatOpenAI wrapper |
 | **"I don't know" path** | LangGraph `grade_relevance` node gates on Cohere relevance score < 0.25 → fixed refusal string, no hallucination. Short follow-up questions (timezone conversions, pronoun references) bypass this gate and answer from `chat_history`. |
 | **Latency target** | < 8 seconds end-to-end (estimated actual: 3–6 seconds) |
@@ -75,8 +75,10 @@ When the system cannot find a relevant answer in the knowledge base, it graceful
 User question
      │
      ▼
-Pinecone dense retriever  (cosine similarity, k=10 candidates)
-     │
+Hybrid retriever — Stage 1: two-leg candidate generation (k=10 each)
+  ├── Dense leg:  Pinecone cosine similarity (semantic matching)
+  └── Sparse leg: BM25 over CSV chunks (exact token matching: dates, names, scores)
+     │ Reciprocal Rank Fusion (60% dense, 40% BM25)
      ▼
 Cohere rerank-english-v3.0  (cross-encoder → top-5 chunks)
      │
@@ -113,6 +115,7 @@ Cited answer + source titles displayed in Streamlit chat UI
 | Decision Made | Alternative Rejected | Rationale |
 |---|---|---|
 | LangGraph 4-node StateGraph | Simple LangChain LCEL chain | Enables conditional routing, hallucination retry loops, state persistence — impossible with a linear chain |
+| Hybrid BM25 + dense retrieval | Dense-only retrieval | EnsembleRetriever fuses both legs via RRF — dense captures semantic intent, BM25 catches exact tokens like "1994", "Klose", "4-1" that embeddings dilute |
 | Cohere cross-encoder reranker | LLM-as-grader (1 call per chunk) | Dedicated reranking model — more accurate and cheaper than burning a 70B LLM call per chunk |
 | Hallucination checker with retry (max 2) | Single-pass generation | Catches cases where LLM added facts not in retrieved chunks; capped to prevent infinite loops |
 | Nebius Qwen/Qwen3-Embedding-8B (4096d) | OpenAI text-embedding-3-small | OpenAI models not hosted on Nebius; Qwen3-Embedding-8B is strongest available |
@@ -285,6 +288,7 @@ Q3 and Q5 are scoring artefacts (factually correct answers using slightly differ
 |---|---|
 | Embeddings | Nebius `Qwen/Qwen3-Embedding-8B` (4096d) |
 | Vector store | Pinecone serverless (AWS us-east-1, cosine) |
+| Retriever | Hybrid: dense (Pinecone) + BM25 via EnsembleRetriever (60/40 RRF) |
 | Reranker | Cohere `rerank-english-v3.0` cross-encoder |
 | LLM | Nebius `meta-llama/Llama-3.3-70B-Instruct` |
 | Framework | LangChain + LangGraph |
