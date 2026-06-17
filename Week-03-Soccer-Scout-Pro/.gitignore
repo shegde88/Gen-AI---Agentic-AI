@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment variables — API keys must never be committed
+.env
+
+# Large data file — too large for GitHub (5.37GB)
+male_players.csv
+uploaded_players.csv
+
+# Generated cache files — rebuilt automatically on first run
+.data_cache/
+
+# Claude memory and settings
+.claude/
+
+# Video and deliverable files
+*.mp4
+*.docx
