@@ -2,7 +2,7 @@
 
 A data-driven football scouting application built for clubs competing in Europe's top five leagues — Premier League, La Liga, Bundesliga, Serie A, and Ligue 1.
 
-Built using **vibe coding** with Claude AI (Anthropic) as part of the Gen AI & Agentic AI Course — Week 03.
+Built with Claude AI (Anthropic) and LangGraph.
 
 **Author:** Sharan Hegde
 
@@ -28,7 +28,7 @@ A browser-based Streamlit app with 11 tabs:
 
 ### Transfer Scout Agent
 
-The headline feature added in Week 03. A 7-node LangGraph pipeline with a human-in-the-loop interrupt:
+A 7-node LangGraph pipeline with a human-in-the-loop interrupt:
 
 ```
 parse_brief → search_players → score_players → fetch_news → generate_report → [human review] → save_report

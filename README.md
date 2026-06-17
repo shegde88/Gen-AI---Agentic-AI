@@ -1,6 +1,6 @@
 # Gen AI & Agentic AI — Course Projects
 
-A collection of apps built during the Gen AI & Agentic AI course using vibe coding with Claude AI.
+A collection of apps built using LLMs and agentic AI frameworks.
 
 **Author:** Sharan Hegde
 
